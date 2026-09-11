@@ -53,73 +53,63 @@ export default function AdminSettings() {
   if (loading) return <div>Chargement...</div>;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-in fade-in duration-300">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-serif font-black text-gray-900">Paramètres globaux</h1>
+        <div>
+          <h1 className="text-3xl font-serif font-black text-gray-900">Paramètres globaux</h1>
+          <p className="text-gray-500 mt-1">Gérez la configuration générale de votre plateforme</p>
+        </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-        <form onSubmit={handleSubmit} className="space-y-8">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="p-6 border-b border-gray-100 bg-gray-50/50">
+          <h2 className="text-lg font-bold text-gray-900">Informations publiques</h2>
+        </div>
+        <form onSubmit={handleSubmit} className="p-8 space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-2">
               <label className="text-sm font-bold text-gray-700 uppercase tracking-wide">Nom du site</label>
-              <input type="text" value={config.name} onChange={(e) => setConfig({...config, name: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-red" />
+              <input type="text" value={config.name} onChange={(e) => setConfig({...config, name: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-red/50 focus:bg-white transition-all" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-bold text-gray-700 uppercase tracking-wide">Slogan</label>
-              <input type="text" value={config.slogan} onChange={(e) => setConfig({...config, slogan: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-red" />
+              <input type="text" value={config.slogan} onChange={(e) => setConfig({...config, slogan: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-red/50 focus:bg-white transition-all" />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-bold text-gray-700 uppercase tracking-wide">Adresse</label>
-              <input type="text" value={config.address} onChange={(e) => setConfig({...config, address: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-red" />
+              <label className="text-sm font-bold text-gray-700 uppercase tracking-wide">Adresse (Siège)</label>
+              <input type="text" value={config.address} onChange={(e) => setConfig({...config, address: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-red/50 focus:bg-white transition-all" />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-bold text-gray-700 uppercase tracking-wide">Téléphone</label>
-              <input type="text" value={config.phone} onChange={(e) => setConfig({...config, phone: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-red" />
+              <label className="text-sm font-bold text-gray-700 uppercase tracking-wide">Téléphone public</label>
+              <input type="text" value={config.phone} onChange={(e) => setConfig({...config, phone: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-red/50 focus:bg-white transition-all" />
             </div>
+            
+            {/* Reseaux Sociaux */}
+            <div className="md:col-span-2 pt-4 pb-2 border-b border-gray-100">
+              <h3 className="text-md font-bold text-gray-900">Réseaux Sociaux</h3>
+            </div>
+
             <div className="space-y-2">
               <label className="text-sm font-bold text-gray-700 uppercase tracking-wide">Facebook (URL)</label>
-              <input type="url" value={config.socials?.facebook || ''} onChange={(e) => setConfig({...config, socials: {...config.socials, facebook: e.target.value}})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-red" />
+              <input type="url" value={config.socials?.facebook || ''} onChange={(e) => setConfig({...config, socials: {...config.socials, facebook: e.target.value}})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-red/50 focus:bg-white transition-all" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-bold text-gray-700 uppercase tracking-wide">Twitter/X (URL)</label>
-              <input type="url" value={config.socials?.twitter || ''} onChange={(e) => setConfig({...config, socials: {...config.socials, twitter: e.target.value}})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-red" />
+              <input type="url" value={config.socials?.twitter || ''} onChange={(e) => setConfig({...config, socials: {...config.socials, twitter: e.target.value}})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-red/50 focus:bg-white transition-all" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-bold text-gray-700 uppercase tracking-wide">YouTube (URL)</label>
-              <input type="url" value={config.socials?.youtube || ''} onChange={(e) => setConfig({...config, socials: {...config.socials, youtube: e.target.value}})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-red" />
+              <input type="url" value={config.socials?.youtube || ''} onChange={(e) => setConfig({...config, socials: {...config.socials, youtube: e.target.value}})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-red/50 focus:bg-white transition-all" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-bold text-gray-700 uppercase tracking-wide">WhatsApp (URL)</label>
-              <input type="url" value={config.socials?.whatsapp || ''} onChange={(e) => setConfig({...config, socials: {...config.socials, whatsapp: e.target.value}})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-red" />
+              <input type="url" value={config.socials?.whatsapp || ''} onChange={(e) => setConfig({...config, socials: {...config.socials, whatsapp: e.target.value}})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-red/50 focus:bg-white transition-all" />
             </div>
           </div>
-          <div className="pt-6 flex items-center justify-between border-t border-gray-100">
-            <span className="text-green-600 font-bold">{message}</span>
-            <button type="submit" disabled={saving} className="flex items-center gap-2 bg-brand-red text-white px-8 py-3 rounded-lg font-bold hover:bg-red-700 transition disabled:opacity-50">
-              <Save size={18} /> {saving ? 'Sauvegarde...' : 'Enregistrer les modifications'}
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-        <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2"><Key size={20} /> Modifier le mot de passe</h2>
-        <form onSubmit={handlePasswordChange} className="max-w-md space-y-4">
-          <div>
-            <label className="block text-sm font-bold text-gray-700 uppercase mb-2">Nouveau mot de passe</label>
-            <input 
-              type="password" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-red"
-              placeholder="Minimum 6 caractères"
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-brand-red font-bold text-sm">{passwordMessage}</span>
-            <button type="submit" className="bg-gray-900 text-white px-4 py-2 rounded-lg font-bold hover:bg-gray-800 transition">
-              Mettre à jour
+          
+          <div className="pt-8 flex items-center justify-end">
+            <button type="submit" disabled={saving} className="flex items-center gap-2 bg-brand-red text-white px-8 py-3 rounded-xl font-bold hover:bg-red-700 shadow-md shadow-brand-red/20 hover:-translate-y-0.5 transition-all disabled:opacity-50">
+              <Save size={18} /> {saving ? 'Sauvegarde en cours...' : 'Enregistrer les modifications'}
             </button>
           </div>
         </form>

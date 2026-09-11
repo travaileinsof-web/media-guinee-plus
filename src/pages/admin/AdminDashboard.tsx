@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { FileText, Tags, Image as ImageIcon, Eye, TrendingUp, Clock, Plus, Handshake, Users, FileEdit } from 'lucide-react';
 import { authFetch } from '../../lib/auth';
 import { Link } from 'react-router-dom';
+import { AdminDashboardSkeleton } from '../../components/AdminSkeleton';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar
@@ -25,7 +26,7 @@ const categoryData = [
 ];
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState({ articles: 0, categories: 0, ads: 0, views: 0 });
+  const [stats, setStats] = useState({ articles: 0, categories: 0, ads: 0, views: 0, recentActivities: [] as any[] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,22 +36,26 @@ export default function AdminDashboard() {
       authFetch('/api/ads').then(r => r.json())
     ]).then(([articles, categories, ads]) => {
       const articlesList = Array.isArray(articles) ? articles : [];
+      const sortedArticles = [...articlesList].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      const recent = sortedArticles.slice(0, 4).map(a => ({
+        text: `Nouvel article publié : ${a.title.slice(0, 40)}${a.title.length > 40 ? '...' : ''}`,
+        time: new Date(a.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }),
+        type: 'article'
+      }));
+
       setStats({
         articles: articlesList.length,
         categories: Array.isArray(categories) ? categories.length : 0,
         ads: Array.isArray(ads) ? ads.length : 0,
-        views: articlesList.reduce((acc, curr) => acc + (curr.views || 0), 0)
+        views: articlesList.reduce((acc: any, curr: any) => acc + (curr.views || 0), 0),
+        recentActivities: recent.length > 0 ? recent : [{ text: 'Aucune activité récente', time: '-', type: 'none' }]
       });
       setLoading(false);
     }).catch(console.error);
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-[60vh]">
-        <div className="w-10 h-10 border-4 border-gray-200 border-t-brand-red rounded-full animate-spin"></div>
-      </div>
-    );
+    return <AdminDashboardSkeleton />;
   }
 
   return (
@@ -147,12 +152,7 @@ export default function AdminDashboard() {
         <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <h3 className="font-bold text-gray-900 mb-6">Activités récentes</h3>
           <div className="space-y-6">
-            {[
-              { text: 'Nouvel article publié dans Politique', time: 'Il y a 2h', type: 'article' },
-              { text: 'Mise à jour de la page À propos', time: 'Il y a 5h', type: 'page' },
-              { text: 'Nouveau partenaire ajouté: Orange', time: 'Hier', type: 'partner' },
-              { text: 'Modification des espaces publicitaires', time: 'Hier', type: 'ad' }
-            ].map((act, i) => (
+            {stats.recentActivities.map((act, i) => (
               <div key={i} className="flex gap-4">
                 <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100">
                   <Clock size={16} className="text-gray-400" />

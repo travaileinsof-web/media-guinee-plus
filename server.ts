@@ -265,8 +265,15 @@ app.delete("/api/partners/:id", authenticateToken, async (req, res) => {
 
 
 app.put('/api/admin/password', authenticateToken, async (req, res) => {
-  const { newPassword } = req.body;
-  if (!newPassword || newPassword.length < 6) return res.status(400).json({ error: 'Mot de passe trop court (min 6)' });
+  const { oldPassword, newPassword } = req.body;
+  
+  if (!verifyPassword(oldPassword)) {
+    return res.status(401).json({ error: 'Ancien mot de passe incorrect' });
+  }
+
+  if (!newPassword || newPassword.length < 6) {
+    return res.status(400).json({ error: 'Nouveau mot de passe trop court (min 6 caractères)' });
+  }
   const salt = crypto.randomBytes(16).toString('hex');
   const hash = crypto.scryptSync(newPassword, salt, 64).toString('hex');
   const result = `scrypt${salt}${hash}`;

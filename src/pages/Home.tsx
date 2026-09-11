@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { ChevronLeft, ChevronRight, Clock, MapPin, Radio } from "lucide-react";
+import { useArticles } from "../lib/hooks";
 
-// ---------------------------------------------------------------------------
-// Contenu de démonstration — à remplacer par vos données réelles (useArticles)
-// ---------------------------------------------------------------------------
 const SLIDES = [
   {
     id: 1,
@@ -72,25 +70,39 @@ const SLIDES = [
   },
 ];
 
-const COLORS = {
+const COLORS: Record<string, string> = {
   red: "#C81D25",
   green: "#0B7A44",
   yellow: "#E4A700",
   blue: "#1C4E80",
 };
 
-const SLIDE_DURATION = 6000; // ms
+const SLIDE_DURATION = 6000;
 
 export default function HeroALaUne() {
+  const { articles } = useArticles({ limit: 5 });
+  
+  const displaySlides = articles.length > 0 ? articles.map((a: any) => ({
+    id: a.id,
+    category: a.categoryId || 'Actualité',
+    color: ['red', 'green', 'yellow', 'blue'][Math.floor(Math.random() * 4)],
+    title: a.title,
+    excerpt: a.excerpt || a.title,
+    author: a.author || 'Rédaction',
+    date: new Date(a.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
+    readTime: a.readTime || '3 min',
+    image: a.imageUrl || 'https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=1600&auto=format&fit=crop',
+  })) : SLIDES;
+
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [progressKey, setProgressKey] = useState(0);
-  const timeoutRef = useRef(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const goTo = useCallback((i) => {
-    setIndex(((i % SLIDES.length) + SLIDES.length) % SLIDES.length);
+  const goTo = useCallback((i: number) => {
+    setIndex(((i % displaySlides.length) + displaySlides.length) % displaySlides.length);
     setProgressKey((k) => k + 1);
-  }, []);
+  }, [displaySlides.length]);
 
   const next = useCallback(() => goTo(index + 1), [index, goTo]);
   const prev = useCallback(() => goTo(index - 1), [index, goTo]);
@@ -98,12 +110,15 @@ export default function HeroALaUne() {
   useEffect(() => {
     if (paused) return;
     timeoutRef.current = setTimeout(next, SLIDE_DURATION);
-    return () => clearTimeout(timeoutRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [index, paused]);
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [index, paused, next]);
 
-  const active = SLIDES[index];
-  const activeColor = COLORS[active.color];
+  const active = displaySlides[index];
+  const activeColor = COLORS[active?.color] || COLORS.red;
+
+  if (!active) return null;
 
   return (
     <div
@@ -128,11 +143,11 @@ export default function HeroALaUne() {
 
         .slide-track {
           display: flex;
-          width: ${SLIDES.length * 100}%;
+          width: ${displaySlides.length * 100}%;
           transition: transform 0.85s cubic-bezier(0.65, 0, 0.15, 1);
         }
         .slide-pane {
-          width: ${100 / SLIDES.length}%;
+          width: ${100 / displaySlides.length}%;
           flex-shrink: 0;
           position: relative;
         }
@@ -186,9 +201,9 @@ export default function HeroALaUne() {
       >
         <div
           className="slide-track h-full"
-          style={{ transform: `translateX(-${index * (100 / SLIDES.length)}%)` }}
+          style={{ transform: `translateX(-${index * (100 / displaySlides.length)}%)` }}
         >
-          {SLIDES.map((s, i) => (
+          {displaySlides.map((s: any, i: number) => (
             <div key={s.id} className={`slide-pane h-full ${i === index ? "is-active" : ""}`}>
               <img src={s.image} alt={s.title} className="w-full h-full object-cover" />
               <div
@@ -244,7 +259,7 @@ export default function HeroALaUne() {
 
       {/* Rail de miniatures avec barre de cadence */}
       <div className="grid grid-cols-5 gap-3 mt-4">
-        {SLIDES.map((s, i) => {
+        {displaySlides.map((s: any, i: number) => {
           const isActive = i === index;
           return (
             <button
@@ -257,7 +272,7 @@ export default function HeroALaUne() {
                 <img src={s.image} alt="" className="w-full h-full object-cover group-hover:opacity-90" />
                 <div
                   className="absolute top-0 left-0 h-[3px]"
-                  style={{ backgroundColor: COLORS[s.color], width: isActive ? "100%" : "0%" }}
+                  style={{ backgroundColor: COLORS[s.color] || COLORS.red, width: isActive ? "100%" : "0%" }}
                 />
               </div>
               <p

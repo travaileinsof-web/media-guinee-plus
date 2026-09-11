@@ -1,3 +1,4 @@
+import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, CheckCircle, XCircle } from 'lucide-react';
 import { authFetch } from '../../lib/auth';
@@ -27,11 +28,19 @@ export default function AdminCategories() {
     setIsEditing(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Voulez-vous vraiment supprimer cette rubrique ?')) {
-      await authFetch(`/api/categories/${id}`, { method: 'DELETE' });
-      fetchCategories();
-    }
+  const handleDelete = (id: string) => {
+    toast('Confirmer la suppression ?', {
+      description: 'Cette rubrique sera supprimée définitivement.',
+      action: {
+        label: 'Supprimer',
+        onClick: async () => {
+          await authFetch(`/api/categories/${id}`, { method: 'DELETE' });
+          fetchCategories();
+          toast.success('Rubrique supprimée');
+        }
+      },
+      cancel: { label: 'Annuler', onClick: () => {} }
+    });
   };
 
   const handleToggleActive = async (cat: any) => {
