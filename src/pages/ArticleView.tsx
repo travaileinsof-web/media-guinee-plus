@@ -7,6 +7,7 @@ import { Reveal } from '../components/Reveal';
 import { motion, useScroll, useTransform } from 'motion/react';
 import { Calendar, Clock, Share2, Facebook, Twitter, Linkedin, Link2, Eye } from 'lucide-react';
 import { AdSpace } from '../components/AdSpace';
+import axios from 'axios';
 
 export default function ArticleView() {
   const { id } = useParams<{ id: string }>();
@@ -28,9 +29,9 @@ export default function ArticleView() {
   };
 
   useEffect(() => {
-    fetch(`/api/articles/${id}`, { cache: 'no-store' })
-      .then(res => res.json())
-      .then(data => {
+    axios.get(`/api/articles/${id}`, { cache: 'no-store' })
+      .then(res => {
+        const data = res.data;
         if (!data.error) {
           setArticle(data);
         }

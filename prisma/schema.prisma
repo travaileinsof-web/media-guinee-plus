@@ -28,6 +28,17 @@ model Article {
   readTime   String?
   isFeatured Boolean  @default(false)
   views      Int      @default(0)
+  viewEvents ArticleView[]
+}
+
+model ArticleView {
+  id        String   @id @default(cuid())
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([articleId, createdAt])
+  @@index([createdAt])
 }
 
 model SiteConfig {

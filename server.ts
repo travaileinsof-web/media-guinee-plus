@@ -644,20 +644,86 @@ app.get("/api/articles", async (req, res) => {
 });
 
 app.get("/api/articles/:id", async (req, res) => {
-  const article = await prisma.article.findUnique({
-    where: { id: req.params.id },
-    include: { category: true }
-  });
-  if (article) {
-    await prisma.article.update({
+  const article = await prisma.$transaction(async (transaction) => {
+    const currentArticle = await transaction.article.findUnique({
+      where: { id: req.params.id },
+      include: { category: true },
+    });
+
+    if (!currentArticle) return null;
+
+    await transaction.article.update({
       where: { id: req.params.id },
       data: { views: { increment: 1 } },
     });
-    article.views += 1;
+    await transaction.articleView.create({
+      data: { articleId: req.params.id },
+    });
+
+    return { ...currentArticle, views: currentArticle.views + 1 };
+  });
+
+  if (article) {
     res.json(article);
   } else {
     res.status(404).json({ error: "Not found" });
   }
+});
+
+app.get("/api/admin/stats", authenticateToken, async (_req, res) => {
+  const since = new Date();
+  since.setHours(0, 0, 0, 0);
+  since.setDate(since.getDate() - 6);
+
+  const [articles, categories, ads, views, recentArticles] = await Promise.all([
+    prisma.article.findMany({
+      select: { id: true, title: true, date: true, views: true, category: { select: { id: true, name: true } } },
+      orderBy: { date: "desc" },
+    }),
+    prisma.category.count(),
+    prisma.adSpace.count(),
+    prisma.articleView.findMany({
+      where: { createdAt: { gte: since } },
+      select: { createdAt: true },
+    }),
+    prisma.article.findMany({
+      select: { title: true, date: true },
+      orderBy: { date: "desc" },
+      take: 3,
+    }),
+  ]);
+
+  const dailyViews = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(since);
+    date.setDate(since.getDate() + index);
+    const key = date.toISOString().slice(0, 10);
+    return {
+      date: key,
+      name: date.toLocaleDateString("fr-FR", { weekday: "short" }).replace(".", ""),
+      vues: views.filter((view) => view.createdAt.toISOString().slice(0, 10) === key).length,
+    };
+  });
+
+  const categoryViews = new Map<string, { name: string; articles: number }>();
+  for (const article of articles) {
+    const current = categoryViews.get(article.category.id) || { name: article.category.name, articles: 0 };
+    current.articles += article.views;
+    categoryViews.set(article.category.id, current);
+  }
+
+  res.json({
+    articles: articles.length,
+    categories,
+    ads,
+    views: articles.reduce((total, article) => total + article.views, 0),
+    viewsData: dailyViews,
+    categoryData: Array.from(categoryViews.values()).sort((a, b) => b.articles - a.articles),
+    recentActivities: recentArticles.map((article) => ({
+      text: `Article : ${article.title.slice(0, 40)}${article.title.length > 40 ? "..." : ""}`,
+      time: new Date(article.date).toLocaleDateString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }),
+      type: "article",
+    })),
+  });
 });
 
 app.post("/api/articles", authenticateToken, async (req, res) => {

@@ -68,7 +68,7 @@ export default function AdminLayout() {
   };
 
   const confirmLogout = () => {
-    localStorage.removeItem('adminToken');
+    localStorage.removeItem('admin_token');
     navigate('/admin/login');
   };
 

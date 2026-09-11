@@ -1,12 +1,13 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, Menu, Home } from 'lucide-react';
-import { useCategories, useConfig } from '../lib/hooks';
+import { useCategories, useConfig, useArticles } from '../lib/hooks';
 import { motion, AnimatePresence } from 'motion/react';
 import { useState, useEffect } from 'react';
 import type { FormEvent, Key, ReactNode } from 'react';
 
 export default function Header() {
   const { categories } = useCategories();
+  const { articles: recentArticles } = useArticles({ limit: 5 });
   const { config } = useConfig();
   const activeCategories = categories.filter(c => c.isActive);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -46,7 +47,9 @@ export default function Header() {
             animate={{ x: ['100%', '-100%'] }}
             transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
           >
-            À suivre : décisions publiques • vie chère et pouvoir d’achat • initiatives locales en Guinée
+            {recentArticles.length > 0 
+              ? recentArticles.map(a => a.title).join(' • ')
+              : 'Bienvenue sur Guinée+ • Suivez l\'actualité guinéenne en temps réel'}
           </motion.div>
         </div>
         <div className="hidden md:flex items-center gap-4 shrink-0 text-xs font-bold uppercase ml-4">
