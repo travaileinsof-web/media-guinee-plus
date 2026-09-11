@@ -8,7 +8,8 @@ interface AdSpaceProps {
 }
 
 export function AdSpace({ format = 'horizontal', location, className = '' }: AdSpaceProps) {
-  const { ads, loading } = useAds(location, format);
+  // On recherche par location uniquement (le format peut différer de celui attendu par la boîte)
+  const { ads, loading } = useAds(location);
   
   const dimensions = {
     horizontal: 'w-full h-24 md:h-32',

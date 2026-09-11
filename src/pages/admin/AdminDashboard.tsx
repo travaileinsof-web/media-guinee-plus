@@ -37,11 +37,23 @@ export default function AdminDashboard() {
     ]).then(([articles, categories, ads]) => {
       const articlesList = Array.isArray(articles) ? articles : [];
       const sortedArticles = [...articlesList].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      const recent = sortedArticles.slice(0, 4).map(a => ({
-        text: `Nouvel article publié : ${a.title.slice(0, 40)}${a.title.length > 40 ? '...' : ''}`,
+      const recentArticles = sortedArticles.slice(0, 3).map(a => ({
+        text: `Article : ${a.title.slice(0, 40)}${a.title.length > 40 ? '...' : ''}`,
         time: new Date(a.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }),
+        timestamp: new Date(a.date).getTime(),
         type: 'article'
       }));
+      
+      const adsList = Array.isArray(ads) ? ads : [];
+      // AdSpace doesn't have a createdAt field, so we just take the last items in the list
+      const recentAds = adsList.slice(-2).map((a: any) => ({
+        text: `Pub active : ${a.name}`,
+        time: 'Récent',
+        timestamp: Date.now(),
+        type: 'ad'
+      }));
+
+      const recent = [...recentArticles, ...recentAds].sort((a, b) => b.timestamp - a.timestamp).slice(0, 5);
 
       setStats({
         articles: articlesList.length,
