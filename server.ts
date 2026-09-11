@@ -188,6 +188,7 @@ const authenticateToken = (
 };
 
 const app = express();
+app.use(express.json());
 
 // --- New API Routes for Pages, Team, Partners ---
 
@@ -297,7 +298,6 @@ app.put('/api/admin/password', authenticateToken, async (req, res) => {
   res.json({ success: true });
 });
 
-app.use(express.json());
 app.use(
   "/api/login",
   rateLimit({
