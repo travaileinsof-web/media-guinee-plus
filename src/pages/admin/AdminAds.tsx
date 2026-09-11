@@ -125,8 +125,17 @@ export default function AdminAds() {
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-bold text-gray-700">Emplacement (ID)</label>
-              <input type="text" required value={currentAd.location || ''} onChange={e => setCurrentAd({...currentAd, location: e.target.value})} className="w-full px-4 py-2 border rounded-lg" placeholder="ex: home_top, article_middle..." />
+              <label className="text-sm font-bold text-gray-700">Emplacement</label>
+              <select required value={currentAd.location || ''} onChange={e => setCurrentAd({...currentAd, location: e.target.value})} className="w-full px-4 py-2 border rounded-lg">
+                <option value="" disabled>Sélectionner un emplacement</option>
+                <option value="home_top">Accueil - Haut (Bannière)</option>
+                <option value="home_middle">Accueil - Milieu (Entre sections)</option>
+                <option value="sidebar_right">Barre latérale - Droite</option>
+                <option value="article_top">Article - Haut</option>
+                <option value="article_middle">Article - Milieu du texte</option>
+                <option value="article_bottom">Article - Bas</option>
+                <option value="popup_global">Pop-up Global (Toutes pages)</option>
+              </select>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-bold text-gray-700">Image</label>
@@ -151,8 +160,8 @@ export default function AdminAds() {
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-bold text-gray-700">Lien cible (URL)</label>
-              <input type="url" required value={currentAd.targetUrl || ''} onChange={e => setCurrentAd({...currentAd, targetUrl: e.target.value})} className="w-full px-4 py-2 border rounded-lg" />
+              <label className="text-sm font-bold text-gray-700">Lien cible (URL) lors du clic</label>
+              <input type="url" required value={currentAd.targetUrl || ''} onChange={e => setCurrentAd({...currentAd, targetUrl: e.target.value})} className="w-full px-4 py-2 border rounded-lg" placeholder="Ex: https://wa.me/... ou https://annonceur.com" />
             </div>
           </div>
           <div className="flex gap-4 pt-6">
