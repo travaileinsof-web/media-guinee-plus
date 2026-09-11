@@ -1,6 +1,6 @@
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, X, Image as ImageIcon } from 'lucide-react';
+import { Plus, Trash2, X, Image as ImageIcon, Edit2 } from 'lucide-react';
 import { authFetch } from '../../lib/auth';
 
 interface TeamMember {
@@ -15,6 +15,8 @@ export default function AdminTeam() {
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentId, setCurrentId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   
   const [formData, setFormData] = useState({ name: '', role: '', bio: '', imageUrl: '' });
@@ -32,23 +34,46 @@ export default function AdminTeam() {
       .finally(() => setLoading(false));
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const openCreateModal = () => {
+    setIsEditing(false);
+    setCurrentId(null);
+    setFormData({ name: '', role: '', bio: '', imageUrl: '' });
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (m: TeamMember) => {
+    setIsEditing(true);
+    setCurrentId(m.id);
+    setFormData({ name: m.name, role: m.role, bio: m.bio || '', imageUrl: m.imageUrl || '' });
+    setIsModalOpen(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name) return;
     setSaving(true);
     
     try {
-      await authFetch('/api/team', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
+      if (isEditing && currentId) {
+        await authFetch(`/api/team/${currentId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+        toast.success('Membre mis à jour');
+      } else {
+        await authFetch('/api/team', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+        toast.success('Membre ajouté');
+      }
       setIsModalOpen(false);
-      setFormData({ name: '', role: '', bio: '', imageUrl: '' });
       fetchData();
     } catch (err) {
       console.error(err);
-      toast('Erreur lors de la création');
+      toast.error('Erreur lors de la sauvegarde');
     } finally {
       setSaving(false);
     }
@@ -79,7 +104,7 @@ export default function AdminTeam() {
           <p className="text-gray-500 text-sm mt-1">Gérez les membres de votre rédaction.</p>
         </div>
         <button 
-          onClick={() => setIsModalOpen(true)} 
+          onClick={openCreateModal} 
           className="bg-brand-red text-white px-5 py-2.5 rounded-lg flex items-center gap-2 font-bold hover:bg-red-700 hover:shadow-md hover:-translate-y-0.5 transition-all"
         >
           <Plus size={20} /> Ajouter un membre
@@ -123,13 +148,22 @@ export default function AdminTeam() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button 
-                      onClick={() => handleDelete(m.id)} 
-                      className="p-2 text-gray-400 hover:text-brand-red hover:bg-red-50 rounded-lg transition-colors"
-                      title="Supprimer"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+                    <div className="flex justify-end gap-2">
+                      <button 
+                        onClick={() => openEditModal(m)} 
+                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Modifier"
+                      >
+                        <Edit2 size={18} />
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(m.id)} 
+                        className="p-2 text-gray-400 hover:text-brand-red hover:bg-red-50 rounded-lg transition-colors"
+                        title="Supprimer"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -145,12 +179,12 @@ export default function AdminTeam() {
         </div>
       )}
 
-      {/* Modal d'ajout */}
+      {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-xl border border-gray-100 w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-6 border-b border-gray-100">
-              <h3 className="text-xl font-bold text-gray-900">Nouveau Membre</h3>
+              <h3 className="text-xl font-bold text-gray-900">{isEditing ? 'Modifier Membre' : 'Nouveau Membre'}</h3>
               <button 
                 onClick={() => setIsModalOpen(false)}
                 className="text-gray-400 hover:text-gray-900 transition-colors p-1"
@@ -159,7 +193,7 @@ export default function AdminTeam() {
               </button>
             </div>
             
-            <form onSubmit={handleCreate} className="p-6 space-y-5">
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
               <div className="space-y-1">
                 <label className="text-sm font-bold text-gray-700">Nom complet <span className="text-brand-red">*</span></label>
                 <input 

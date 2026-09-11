@@ -1,6 +1,6 @@
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, X, Globe, Image as ImageIcon } from 'lucide-react';
+import { Plus, Trash2, X, Globe, Image as ImageIcon, Edit2 } from 'lucide-react';
 import { authFetch } from '../../lib/auth';
 
 interface Partner {
@@ -15,6 +15,8 @@ export default function AdminPartners() {
   const [partners, setPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentId, setCurrentId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   
   const [formData, setFormData] = useState({ name: '', logoUrl: '', websiteUrl: '', description: '' });
@@ -32,23 +34,46 @@ export default function AdminPartners() {
       .finally(() => setLoading(false));
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const openCreateModal = () => {
+    setIsEditing(false);
+    setCurrentId(null);
+    setFormData({ name: '', logoUrl: '', websiteUrl: '', description: '' });
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (p: Partner) => {
+    setIsEditing(true);
+    setCurrentId(p.id);
+    setFormData({ name: p.name, logoUrl: p.logoUrl || '', websiteUrl: p.websiteUrl || '', description: p.description || '' });
+    setIsModalOpen(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name) return;
     setSaving(true);
     
     try {
-      await authFetch('/api/partners', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
+      if (isEditing && currentId) {
+        await authFetch(`/api/partners/${currentId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+        toast.success('Partenaire mis à jour');
+      } else {
+        await authFetch('/api/partners', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+        toast.success('Partenaire ajouté');
+      }
       setIsModalOpen(false);
-      setFormData({ name: '', logoUrl: '', websiteUrl: '', description: '' });
       fetchData();
     } catch (err) {
       console.error(err);
-      toast('Erreur lors de la création');
+      toast.error('Erreur lors de la sauvegarde');
     } finally {
       setSaving(false);
     }
@@ -76,10 +101,10 @@ export default function AdminPartners() {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-3xl font-serif font-black text-gray-900">Partenaires</h2>
-          <p className="text-gray-500 text-sm mt-1">Gérez vos sponsors et institutions partenaires.</p>
+          <p className="text-gray-500 text-sm mt-1">Gérez les partenaires et sponsors du média.</p>
         </div>
         <button 
-          onClick={() => setIsModalOpen(true)} 
+          onClick={openCreateModal} 
           className="bg-brand-red text-white px-5 py-2.5 rounded-lg flex items-center gap-2 font-bold hover:bg-red-700 hover:shadow-md hover:-translate-y-0.5 transition-all"
         >
           <Plus size={20} /> Ajouter un partenaire
@@ -91,68 +116,68 @@ export default function AdminPartners() {
           <div className="w-8 h-8 border-4 border-gray-200 border-t-brand-red rounded-full animate-spin"></div>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Partenaire</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Lien du site</th>
-                <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 bg-white">
-              {partners.map(p => (
-                <tr key={p.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center">
-                        {p.logoUrl ? (
-                          <img src={p.logoUrl} alt={p.name} className="w-full h-full object-contain p-1" />
-                        ) : (
-                          <span className="text-gray-400 font-bold">{p.name.charAt(0)}</span>
-                        )}
-                      </div>
-                      <div>
-                        <div className="font-bold text-gray-900">{p.name}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {p.websiteUrl ? (
-                      <a href={p.websiteUrl} target="_blank" rel="noopener noreferrer" className="text-brand-red hover:underline flex items-center gap-1">
-                        <Globe size={14} /> Visiter
-                      </a>
-                    ) : '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button 
-                      onClick={() => handleDelete(p.id)} 
-                      className="p-2 text-gray-400 hover:text-brand-red hover:bg-red-50 rounded-lg transition-colors"
-                      title="Supprimer"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {partners.length === 0 && (
-                <tr>
-                  <td colSpan={3} className="px-6 py-12 text-center text-gray-500">
-                    Aucun partenaire enregistré.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {partners.map(p => (
+            <div key={p.id} className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm hover:shadow-md transition-shadow group relative">
+              <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                <button 
+                  onClick={() => openEditModal(p)} 
+                  className="p-2 bg-white text-gray-500 hover:text-blue-600 rounded-lg shadow-sm border border-gray-100 transition-colors"
+                  title="Modifier"
+                >
+                  <Edit2 size={16} />
+                </button>
+                <button 
+                  onClick={() => handleDelete(p.id)} 
+                  className="p-2 bg-white text-gray-500 hover:text-brand-red rounded-lg shadow-sm border border-gray-100 transition-colors"
+                  title="Supprimer"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+              
+              <div className="h-20 flex items-center justify-center mb-6">
+                {p.logoUrl ? (
+                  <img src={p.logoUrl} alt={p.name} className="max-h-full max-w-full object-contain" />
+                ) : (
+                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center border border-gray-100">
+                    <ImageIcon size={24} className="text-gray-300" />
+                  </div>
+                )}
+              </div>
+              
+              <div className="text-center space-y-2">
+                <h3 className="font-bold text-gray-900 text-lg">{p.name}</h3>
+                {p.description && (
+                  <p className="text-sm text-gray-500 line-clamp-2">{p.description}</p>
+                )}
+                {p.websiteUrl && (
+                  <a 
+                    href={p.websiteUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    <Globe size={14} /> Visiter le site
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
+          {partners.length === 0 && (
+            <div className="col-span-full py-12 text-center text-gray-500 bg-white rounded-2xl border border-dashed border-gray-200">
+              Aucun partenaire enregistré.
+            </div>
+          )}
         </div>
       )}
 
-      {/* Modal d'ajout */}
+      {/* Modal d'ajout/édition */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-xl border border-gray-100 w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-6 border-b border-gray-100">
-              <h3 className="text-xl font-bold text-gray-900">Nouveau Partenaire</h3>
+              <h3 className="text-xl font-bold text-gray-900">{isEditing ? 'Modifier Partenaire' : 'Nouveau Partenaire'}</h3>
               <button 
                 onClick={() => setIsModalOpen(false)}
                 className="text-gray-400 hover:text-gray-900 transition-colors p-1"
@@ -161,7 +186,7 @@ export default function AdminPartners() {
               </button>
             </div>
             
-            <form onSubmit={handleCreate} className="p-6 space-y-5">
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
               <div className="space-y-1">
                 <label className="text-sm font-bold text-gray-700">Nom du partenaire <span className="text-brand-red">*</span></label>
                 <input 
