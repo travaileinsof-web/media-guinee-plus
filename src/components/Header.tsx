@@ -4,6 +4,7 @@ import { useCategories, useConfig, useArticles } from '../lib/hooks';
 import { motion, AnimatePresence } from 'motion/react';
 import { useState, useEffect } from 'react';
 import type { FormEvent, Key, ReactNode } from 'react';
+import { AdSpace } from './AdSpace';
 
 export default function Header() {
   const { categories } = useCategories();
@@ -14,6 +15,15 @@ export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [showResults, setShowResults] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchTerm), 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  const { articles: searchResults, loading: searchLoading } = useArticles(debouncedSearch.trim() ? { q: debouncedSearch.trim(), limit: 5 } : { limit: 0 });
 
   useEffect(() => {
     setIsMenuOpen(false);
@@ -80,24 +90,77 @@ export default function Header() {
 
         {/* Ad Banner */}
         <div className="hidden lg:flex flex-1 justify-center px-4">
-          <div className="bg-brand-blue w-full max-w-[728px] h-[90px] flex items-center justify-center text-white text-xl font-bold border border-gray-200">
-            Votre publicité ici
+          <div className="w-full max-w-[728px] h-[90px] flex items-center justify-center">
+            <AdSpace location="header_top" format="horizontal" />
           </div>
         </div>
 
         {/* Search Bar */}
-        <form onSubmit={handleSearch} className="hidden md:flex relative w-64 shrink-0">
-          <input 
-            type="text" 
-            placeholder="Rechercher dans l’actualité"
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-            className="w-full pl-4 pr-10 py-2 border border-gray-300 bg-gray-50 focus:outline-none focus:border-brand-red text-sm"
-          />
-          <button className="absolute right-0 top-0 h-full px-3 text-white bg-brand-red">
-            <Search size={18} />
-          </button>
-        </form>
+        <div className="hidden md:flex relative w-64 shrink-0" onMouseLeave={() => setShowResults(false)}>
+          <form onSubmit={handleSearch} className="relative w-full">
+            <input 
+              type="text" 
+              placeholder="Rechercher dans l’actualité"
+              value={searchTerm}
+              onChange={(event) => {
+                setSearchTerm(event.target.value);
+                setShowResults(true);
+              }}
+              onFocus={() => setShowResults(true)}
+              className="w-full pl-4 pr-10 py-2 border border-gray-300 bg-gray-50 focus:outline-none focus:border-brand-red text-sm"
+            />
+            <button type="submit" className="absolute right-0 top-0 h-full px-3 text-white bg-brand-red">
+              <Search size={18} />
+            </button>
+          </form>
+
+          {/* Live Search Results */}
+          <AnimatePresence>
+            {showResults && debouncedSearch.trim() && (
+              <motion.div 
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 5 }}
+                className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 shadow-xl z-[100] max-h-[400px] overflow-y-auto"
+              >
+                {searchLoading ? (
+                  <div className="p-4 text-sm text-gray-500 text-center">Recherche...</div>
+                ) : searchResults.length > 0 ? (
+                  <div className="py-2">
+                    {searchResults.map((article: any) => (
+                      <Link 
+                        key={article.id} 
+                        to={`/article/${article.id}`}
+                        onClick={() => {
+                          setShowResults(false);
+                          setSearchTerm('');
+                        }}
+                        className="flex items-start gap-3 p-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
+                      >
+                        <div className="w-12 h-12 shrink-0 bg-gray-100 overflow-hidden">
+                          <img src={article.imageUrl || 'https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=1600'} alt="" className="w-full h-full object-cover" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-brand-dark line-clamp-2 leading-snug">{article.title}</p>
+                          <p className="text-[10px] text-gray-500 mt-1 font-bold uppercase">{article.category?.name || 'Actualité'}</p>
+                        </div>
+                      </Link>
+                    ))}
+                    <Link 
+                      to={`/rubriques?q=${encodeURIComponent(debouncedSearch.trim())}`}
+                      onClick={() => setShowResults(false)}
+                      className="block p-2 text-center text-xs font-bold text-brand-red hover:underline bg-gray-50"
+                    >
+                      Voir tous les résultats
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="p-4 text-sm text-gray-500 text-center">Aucun résultat trouvé</div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
         
         {/* Mobile menu toggle */}
         <button 
