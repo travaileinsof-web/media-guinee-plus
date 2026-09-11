@@ -637,6 +637,7 @@ app.get("/api/articles", async (req, res) => {
     where,
     orderBy,
     take: safeLimit,
+    include: { category: true }
   });
 
   res.json(articles);
@@ -645,6 +646,7 @@ app.get("/api/articles", async (req, res) => {
 app.get("/api/articles/:id", async (req, res) => {
   const article = await prisma.article.findUnique({
     where: { id: req.params.id },
+    include: { category: true }
   });
   if (article) {
     await prisma.article.update({

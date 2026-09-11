@@ -45,39 +45,7 @@ export default function AdminChroniques() {
     }
   };
 
-  const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
 
-    const formData = new FormData();
-    formData.append('image', file);
-    
-    const toastId = toast.loading('Téléchargement en cours... 0%');
-
-    try {
-      const token = localStorage.getItem('admin_token');
-      // @ts-ignore
-      const axios = (await import('axios')).default;
-      const res = await axios.post('/api/upload', formData, {
-        headers: { 'Authorization': `Bearer ${token}` },
-        onUploadProgress: (progressEvent: any) => {
-          const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
-          toast.loading(`Téléchargement en cours... ${percentCompleted}%`, { id: toastId });
-        }
-      });
-      
-      if (res.data && res.data.url) {
-        setCurrentChronique({...currentChronique, authorImage: res.data.url, authorImageUrl: res.data.url});
-        toast.success('Image téléchargée avec succès !', { id: toastId });
-      } else {
-        throw new Error(res.data.error || "Réponse invalide du serveur");
-      }
-    } catch (error: any) {
-      console.error('Erreur lors de l\'upload:', error);
-      const errorMsg = error.response?.data?.error || error.message || "Erreur de téléchargement";
-      toast.error(`Erreur: ${errorMsg}`, { id: toastId });
-    }
-  };
 
   return (
     <div>
@@ -123,12 +91,7 @@ export default function AdminChroniques() {
                   {currentChronique.authorImage && (
                     <img src={currentChronique.authorImage} alt="Auteur" className="h-20 w-20 object-cover rounded-full bg-gray-100" />
                   )}
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    onChange={handleImageUpload} 
-                    className="w-full px-4 py-2 border rounded-lg bg-white" 
-                  />
+
                   <input 
                     type="url" 
                     value={currentChronique.authorImage || ''}

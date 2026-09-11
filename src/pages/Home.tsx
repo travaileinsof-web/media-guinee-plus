@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { ChevronLeft, ChevronRight, Clock, MapPin, Radio } from "lucide-react";
 import { useArticles } from "../lib/hooks";
+import { AdSpace } from "../components/AdSpace";
 
 const SLIDES = [
   {
@@ -80,7 +81,7 @@ const COLORS: Record<string, string> = {
 const SLIDE_DURATION = 6000;
 
 export default function HeroALaUne() {
-  const { articles } = useArticles({ limit: 5 });
+  const { articles } = useArticles({ featured: true, limit: 5 });
   
   const displaySlides = articles.length > 0 ? articles.map((a: any) => ({
     id: a.id,
@@ -121,12 +122,13 @@ export default function HeroALaUne() {
   if (!active) return null;
 
   return (
-    <div
-      className="w-full"
-      style={{ fontFamily: "'Inter', ui-sans-serif, system-ui" }}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-    >
+    <>
+      <div
+        className="w-full"
+        style={{ fontFamily: "'Inter', ui-sans-serif, system-ui" }}
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+      >
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
 
@@ -295,6 +297,17 @@ export default function HeroALaUne() {
           );
         })}
       </div>
-    </div>
+      </div>
+      
+      {/* Publicité sous le carrousel (home_top) */}
+      <div className="container mx-auto px-4 mt-8">
+        <AdSpace location="home_top" format="horizontal" className="rounded-xl shadow-sm overflow-hidden" />
+      </div>
+
+      {/* Publicité milieu (home_middle) - temporairement ici en attendant plus de contenu */}
+      <div className="container mx-auto px-4 mt-8 mb-8">
+        <AdSpace location="home_middle" format="horizontal" className="rounded-xl shadow-sm overflow-hidden" />
+      </div>
+    </>
   );
 }

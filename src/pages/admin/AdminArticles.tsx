@@ -72,39 +72,7 @@ export default function AdminArticles() {
     fetchArticles();
   };
 
-  const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
 
-    const formData = new FormData();
-    formData.append('image', file);
-    
-    const toastId = toast.loading('Téléchargement en cours... 0%');
-
-    try {
-      const token = localStorage.getItem('admin_token');
-      // @ts-ignore
-      const axios = (await import('axios')).default;
-      const res = await axios.post('/api/upload', formData, {
-        headers: { 'Authorization': `Bearer ${token}` },
-        onUploadProgress: (progressEvent: any) => {
-          const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
-          toast.loading(`Téléchargement en cours... ${percentCompleted}%`, { id: toastId });
-        }
-      });
-      
-      if (res.data && res.data.url) {
-        setCurrentArticle({...currentArticle, imageUrl: res.data.url});
-        toast.success('Image téléchargée avec succès !', { id: toastId });
-      } else {
-        throw new Error(res.data.error || "Réponse invalide du serveur");
-      }
-    } catch (error: any) {
-      console.error('Erreur lors de l\'upload:', error);
-      const errorMsg = error.response?.data?.error || error.message || "Erreur de téléchargement";
-      toast.error(`Erreur: ${errorMsg}`, { id: toastId });
-    }
-  };
 
   // Pagination Logic
   const totalPages = Math.ceil(articles.length / itemsPerPage);
@@ -180,12 +148,7 @@ export default function AdminArticles() {
                   {currentArticle.imageUrl && (
                     <img src={currentArticle.imageUrl} alt="Aperçu" className="h-20 object-contain bg-gray-100 rounded" />
                   )}
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    onChange={handleImageUpload} 
-                    className="w-full px-4 py-2 border rounded-lg bg-white" 
-                  />
+
                   <input 
                     type="url" 
                     value={currentArticle.imageUrl || ''}
@@ -211,19 +174,28 @@ export default function AdminArticles() {
               <label className="text-sm font-bold text-gray-700">Extrait (Résumé court)</label>
               <textarea required rows={2} value={currentArticle.excerpt || ''} onChange={e => setCurrentArticle({...currentArticle, excerpt: e.target.value})} className="w-full px-4 py-2 border rounded-lg" />
             </div>
-            <div className="space-y-2 pb-12">
-              <label className="text-sm font-bold text-gray-700">Contenu de l'article</label>
-              <ReactQuill 
-                theme="snow" 
-                value={currentArticle.content || ''} 
-                onChange={(val) => setCurrentArticle({...currentArticle, content: val})} 
-                className="h-64 mb-12"
-              />
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-700">Contenu (Texte / HTML)</label>
+                <div className="bg-white">
+                  <ReactQuill theme="snow" value={currentArticle.content || ''} onChange={val => setCurrentArticle({...currentArticle, content: val})} className="h-64 mb-12" />
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                <input
+                  type="checkbox"
+                  id="isFeatured"
+                  checked={currentArticle.isFeatured || false}
+                  onChange={e => setCurrentArticle({...currentArticle, isFeatured: e.target.checked})}
+                  className="w-5 h-5 text-brand-red rounded border-gray-300 focus:ring-brand-red"
+                />
+                <label htmlFor="isFeatured" className="text-sm font-bold text-gray-900 cursor-pointer">
+                  Mettre cet article "À la Une" (Affichage en Slider d'accueil)
+                </label>
+              </div>
             </div>
-            <div className="flex items-center gap-2 pt-8">
-              <input type="checkbox" id="featured" checked={currentArticle.isFeatured || false} onChange={e => setCurrentArticle({...currentArticle, isFeatured: e.target.checked})} className="rounded text-brand-red focus:ring-brand-red w-5 h-5" />
-              <label htmlFor="featured" className="font-medium text-gray-700">Mettre à la Une (Carrousel principal)</label>
-            </div>
+
             <div className="flex justify-end pt-4 border-t">
               <button type="submit" className="bg-brand-red text-white px-6 py-2 rounded-lg flex items-center gap-2">
                 <Save size={20} />
