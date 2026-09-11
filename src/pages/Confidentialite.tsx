@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Lock, FileText, Database, ShieldAlert, Mail, Activity, Eye, Globe } from 'lucide-react';
+import { Lock, FileText, Database, ShieldAlert, Mail, Activity, Eye, Globe, User } from 'lucide-react';
 
 export default function Confidentialite() {
   const [content, setContent] = useState<string | null>(null);
