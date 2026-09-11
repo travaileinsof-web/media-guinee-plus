@@ -14,7 +14,12 @@ export default function AdminAds() {
     fetch('/api/ads', { cache: 'no-store' })
       .then(res => res.json())
       .then(data => {
-        setAds(data);
+        setAds(Array.isArray(data) ? data : []);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setAds([]);
         setLoading(false);
       });
   };

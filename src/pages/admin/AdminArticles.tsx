@@ -25,7 +25,7 @@ export default function AdminArticles() {
     
     const res = await fetch(url, { cache: 'no-store' });
     const data = await res.json();
-    setArticles(data);
+    setArticles(Array.isArray(data) ? data : []);
     setCurrentPage(1); // Reset to first page on search
   };
 

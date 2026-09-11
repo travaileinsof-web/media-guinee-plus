@@ -14,7 +14,7 @@ export default function AdminCategories() {
     authFetch('/api/categories')
       .then(res => res.json())
       .then(data => {
-        setCategories(data);
+        setCategories(Array.isArray(data) ? data : []);
         setLoading(false);
       });
   };

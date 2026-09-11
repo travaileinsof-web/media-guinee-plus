@@ -12,7 +12,7 @@ export default function AdminChroniques() {
   const fetchChroniques = async () => {
     const res = await fetch('/api/chroniques', { cache: 'no-store' });
     const data = await res.json();
-    setChroniques(data);
+    setChroniques(Array.isArray(data) ? data : []);
   };
 
   useEffect(() => {
