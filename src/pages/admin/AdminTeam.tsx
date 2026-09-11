@@ -55,7 +55,8 @@ export default function AdminTeam() {
   };
 
   const handleDelete = (id: string) => {
-    toast.error('Confirmer la suppression ?', {
+    toast('Confirmer la suppression ?', {
+      description: 'Ce membre sera supprimé définitivement.',
       action: {
         label: 'Supprimer',
         onClick: async () => {
@@ -63,7 +64,7 @@ export default function AdminTeam() {
             await authFetch(`/api/team/${id}`, { method: 'DELETE' });
             fetchData();
             toast.success('Membre supprimé');
-          } catch(e) { toast.error('Erreur'); }
+          } catch(e) { toast.error('Erreur lors de la suppression'); }
         }
       },
       cancel: { label: 'Annuler', onClick: () => {} }

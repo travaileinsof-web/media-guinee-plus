@@ -55,7 +55,8 @@ export default function AdminPartners() {
   };
 
   const handleDelete = (id: string) => {
-    toast.error('Confirmer la suppression ?', {
+    toast('Confirmer la suppression ?', {
+      description: 'Ce partenaire sera supprimé définitivement.',
       action: {
         label: 'Supprimer',
         onClick: async () => {
@@ -63,7 +64,7 @@ export default function AdminPartners() {
             await authFetch(`/api/partners/${id}`, { method: 'DELETE' });
             fetchData();
             toast.success('Partenaire supprimé');
-          } catch(e) { toast.error('Erreur'); }
+          } catch(e) { toast.error('Erreur lors de la suppression'); }
         }
       },
       cancel: { label: 'Annuler', onClick: () => {} }
