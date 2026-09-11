@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { FileText, Tags, Image as ImageIcon, Eye, TrendingUp, Clock, Plus, Handshake, Users, FileEdit } from 'lucide-react';
 import { authFetch } from '../../lib/auth';
+import { formatDistanceToNow } from 'date-fns';
+import { fr } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import { AdminDashboardSkeleton } from '../../components/AdminSkeleton';
 import { 
@@ -39,17 +41,23 @@ export default function AdminDashboard() {
       const sortedArticles = [...articlesList].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       const recentArticles = sortedArticles.slice(0, 3).map(a => ({
         text: `Article : ${a.title.slice(0, 40)}${a.title.length > 40 ? '...' : ''}`,
-        time: new Date(a.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }),
+        time: `il y a ${formatDistanceToNow(new Date(a.date), { locale: fr })}`,
         timestamp: new Date(a.date).getTime(),
         type: 'article'
       }));
       
       const adsList = Array.isArray(ads) ? ads : [];
-      // AdSpace doesn't have a createdAt field, so we just take the last items in the list
-      const recentAds = adsList.slice(-2).map((a: any) => ({
+      // On extrait le timestamp de l'ID de la pub (ex: ad_1714389020000)
+      const sortedAds = [...adsList].map((a: any) => {
+        const tsMatch = a.id.match(/\d+/);
+        const timestamp = tsMatch ? parseInt(tsMatch[0], 10) : Date.now() - 86400000;
+        return { ...a, timestamp };
+      }).sort((a, b) => b.timestamp - a.timestamp);
+
+      const recentAds = sortedAds.slice(0, 2).map((a: any) => ({
         text: `Pub active : ${a.name}`,
-        time: 'Récent',
-        timestamp: Date.now(),
+        time: `il y a ${formatDistanceToNow(new Date(a.timestamp), { locale: fr })}`,
+        timestamp: a.timestamp,
         type: 'ad'
       }));
 
