@@ -128,6 +128,13 @@ export default function AdminChroniques() {
                     accept="image/*" 
                     onChange={handleImageUpload} 
                     className="w-full px-4 py-2 border rounded-lg bg-white" 
+                  />
+                  <input 
+                    type="url" 
+                    value={currentChronique.authorImage || ''}
+                    onChange={e => setCurrentChronique({...currentChronique, authorImage: e.target.value})}
+                    className="w-full px-4 py-2 border rounded-lg bg-gray-50" 
+                    placeholder="... ou coller une URL d'image ici"
                     required={!currentChronique.authorImage}
                   />
                 </div>
