@@ -5,7 +5,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Reveal } from '../components/Reveal';
 import { motion, useScroll, useTransform } from 'motion/react';
-import { Calendar, Clock, Share2 } from 'lucide-react';
+import { Calendar, Clock, Share2, Facebook, Twitter, Linkedin, Link2, Eye } from 'lucide-react';
 import { AdSpace } from '../components/AdSpace';
 
 export default function ArticleView() {
@@ -99,6 +99,9 @@ export default function ArticleView() {
                 <p className="text-xs text-gray-400 font-bold uppercase tracking-wider flex items-center gap-2 mt-1">
                   <Clock className="w-3.5 h-3.5" />
                   {article.readTime} de lecture
+                  <span className="mx-2">•</span>
+                  <Eye className="w-3.5 h-3.5" />
+                  {article.views || 0} vues
                 </p>
               </div>
             </div>
