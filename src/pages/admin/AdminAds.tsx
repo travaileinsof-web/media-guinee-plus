@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, CheckCircle, XCircle } from 'lucide-react';
 import { authFetch } from '../../lib/auth';
+import { toast } from 'sonner';
 import type { ChangeEvent, FormEvent } from 'react';
 
 export default function AdminAds() {
@@ -41,18 +42,33 @@ export default function AdminAds() {
     const formData = new FormData();
     formData.append('image', file);
 
+    const toastId = toast.loading('Téléchargement en cours... 0%');
+
     try {
-      const res = await authFetch('/api/upload', {
-        method: 'POST',
-        body: formData
+      const token = localStorage.getItem('admin_token');
+      // @ts-ignore
+      const axios = (await import('axios')).default;
+      const res = await axios.post('/api/upload', formData, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+          // Axios automatically sets multipart/form-data boundary
+        },
+        onUploadProgress: (progressEvent: any) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
+          toast.loading(`Téléchargement en cours... ${percentCompleted}%`, { id: toastId });
+        }
       });
-      const data = await res.json();
-      if (data.url) {
-        setCurrentAd({...currentAd, imageUrl: data.url});
+      
+      if (res.data && res.data.url) {
+        setCurrentAd({...currentAd, imageUrl: res.data.url});
+        toast.success('Image téléchargée avec succès !', { id: toastId });
+      } else {
+        throw new Error(res.data.error || "Réponse invalide du serveur");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors de l\'upload:', error);
-      alert("Erreur lors du téléchargement de l'image");
+      const errorMsg = error.response?.data?.error || error.message || "Erreur de téléchargement";
+      toast.error(`Erreur: ${errorMsg}`, { id: toastId });
     }
   };
 

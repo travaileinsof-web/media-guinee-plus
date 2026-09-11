@@ -4,6 +4,7 @@ import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { useCategories } from '../../lib/hooks';
 import { authFetch } from '../../lib/auth';
+import { toast } from 'sonner';
 import type { ChangeEvent, FormEvent } from 'react';
 
 export default function AdminArticles() {
@@ -77,19 +78,31 @@ export default function AdminArticles() {
 
     const formData = new FormData();
     formData.append('image', file);
+    
+    const toastId = toast.loading('Téléchargement en cours... 0%');
 
     try {
-      const res = await authFetch('/api/upload', {
-        method: 'POST',
-        body: formData
+      const token = localStorage.getItem('admin_token');
+      // @ts-ignore
+      const axios = (await import('axios')).default;
+      const res = await axios.post('/api/upload', formData, {
+        headers: { 'Authorization': `Bearer ${token}` },
+        onUploadProgress: (progressEvent: any) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
+          toast.loading(`Téléchargement en cours... ${percentCompleted}%`, { id: toastId });
+        }
       });
-      const data = await res.json();
-      if (data.url) {
-        setCurrentArticle({...currentArticle, imageUrl: data.url});
+      
+      if (res.data && res.data.url) {
+        setCurrentArticle({...currentArticle, imageUrl: res.data.url});
+        toast.success('Image téléchargée avec succès !', { id: toastId });
+      } else {
+        throw new Error(res.data.error || "Réponse invalide du serveur");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors de l\'upload:', error);
-      alert("Erreur lors du téléchargement de l'image");
+      const errorMsg = error.response?.data?.error || error.message || "Erreur de téléchargement";
+      toast.error(`Erreur: ${errorMsg}`, { id: toastId });
     }
   };
 
