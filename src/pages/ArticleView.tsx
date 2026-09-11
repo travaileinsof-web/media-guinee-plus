@@ -18,7 +18,7 @@ export default function ArticleView() {
 
   const shareArticle = async () => {
     try {
-      const shareData = { title: article?.title || 'Einsof-media', url: window.location.href };
+      const shareData = { title: article?.title || 'Guinée+', url: window.location.href };
       if (navigator.share) {
         await navigator.share(shareData);
       } else if (navigator.clipboard) {
@@ -47,7 +47,7 @@ export default function ArticleView() {
       {/* Immersive Header */}
       <div className="relative h-[60vh] md:h-[70vh] w-full overflow-hidden bg-brand-dark">
         <motion.div style={{ y, opacity }} className="absolute inset-0 origin-top">
-          <img onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600' viewBox='0 0 800 600'%3E%3Crect fill='%23f3f4f6' width='800' height='600'/%3E%3Ctext fill='%239ca3af' font-family='sans-serif' font-size='30' dy='10.5' font-weight='bold' x='50%25' y='50%25' text-anchor='middle'%3EEINSOF-MEDIA%3C/text%3E%3C/svg%3E"; }}
+          <img onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600' viewBox='0 0 800 600'%3E%3Crect fill='%23f3f4f6' width='800' height='600'/%3E%3Ctext fill='%239ca3af' font-family='sans-serif' font-size='30' dy='10.5' font-weight='bold' x='50%25' y='50%25' text-anchor='middle'%3EGUINÉE+%3C/text%3E%3C/svg%3E"; }}
             src={article.imageUrl} 
             alt={article.title} 
             className="w-full h-full object-cover opacity-60"

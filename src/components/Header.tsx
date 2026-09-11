@@ -64,13 +64,13 @@ export default function Header() {
       <div className="max-w-7xl mx-auto w-full px-4 py-4 flex flex-col lg:flex-row items-center justify-between gap-6">
         {/* Logo */}
         <Link to="/" className="flex items-center shrink-0">
-          <img src="/logo.jpg" alt="Einsof-media" className="w-16 h-16 object-contain mr-3" />
+          <img src="/icon.png" alt="Guinée+" className="w-16 h-16 object-contain mr-3" />
           <div className="flex flex-col justify-center">
             <div className="text-4xl font-sans font-black tracking-tighter leading-none text-brand-red">
-              EINSOF-MEDIA
+              GUINÉE+
             </div>
             <span className="text-xs font-medium text-gray-700 italic mt-1">
-              Comprendre la Guinée, raconter ses territoires
+              Vivez l'info en temps réel
             </span>
           </div>
         </Link>

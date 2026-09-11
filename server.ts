@@ -188,6 +188,108 @@ const authenticateToken = (
 };
 
 const app = express();
+
+// --- New API Routes for Pages, Team, Partners ---
+
+app.get("/api/pages/:slug", async (req, res) => {
+  const page = await prisma.pageContent.findUnique({ where: { slug: req.params.slug } });
+  res.json(page || { slug: req.params.slug, title: '', content: '' });
+});
+
+app.put("/api/pages/:slug", authenticateToken, async (req, res) => {
+  const page = await prisma.pageContent.upsert({
+    where: { slug: req.params.slug },
+    update: { title: req.body.title || '', content: req.body.content || '' },
+    create: { slug: req.params.slug, title: req.body.title || '', content: req.body.content || '' }
+  });
+  res.json(page);
+});
+
+app.get("/api/team", async (req, res) => {
+  const members = await prisma.teamMember.findMany({ orderBy: { order: 'asc' } });
+  res.json(members);
+});
+
+app.post("/api/team", authenticateToken, async (req, res) => {
+  const member = await prisma.teamMember.create({
+    data: {
+      name: req.body.name || 'Nouveau membre',
+      role: req.body.role || '',
+      bio: req.body.bio || '',
+      imageUrl: req.body.imageUrl || null,
+      order: req.body.order || 0
+    }
+  });
+  res.json(member);
+});
+
+app.put("/api/team/:id", authenticateToken, async (req, res) => {
+  const data = pickFields(req.body, ["name", "role", "bio", "imageUrl", "order"]);
+  await prisma.teamMember.update({ where: { id: req.params.id }, data });
+  res.json({ success: true });
+});
+
+app.delete("/api/team/:id", authenticateToken, async (req, res) => {
+  await prisma.teamMember.delete({ where: { id: req.params.id } });
+  res.json({ success: true });
+});
+
+app.get("/api/partners", async (req, res) => {
+  const partners = await prisma.partner.findMany({ orderBy: { order: 'asc' } });
+  res.json(partners);
+});
+
+app.post("/api/partners", authenticateToken, async (req, res) => {
+  const partner = await prisma.partner.create({
+    data: {
+      name: req.body.name || 'Nouveau partenaire',
+      logoUrl: req.body.logoUrl || null,
+      websiteUrl: req.body.websiteUrl || null,
+      description: req.body.description || '',
+      order: req.body.order || 0
+    }
+  });
+  res.json(partner);
+});
+
+app.put("/api/partners/:id", authenticateToken, async (req, res) => {
+  const data = pickFields(req.body, ["name", "logoUrl", "websiteUrl", "description", "order"]);
+  await prisma.partner.update({ where: { id: req.params.id }, data });
+  res.json({ success: true });
+});
+
+app.delete("/api/partners/:id", authenticateToken, async (req, res) => {
+  await prisma.partner.delete({ where: { id: req.params.id } });
+  res.json({ success: true });
+});
+
+
+app.put('/api/admin/password', authenticateToken, async (req, res) => {
+  const { newPassword } = req.body;
+  if (!newPassword || newPassword.length < 6) return res.status(400).json({ error: 'Mot de passe trop court (min 6)' });
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.scryptSync(newPassword, salt, 64).toString('hex');
+  const result = `scrypt${salt}${hash}`;
+  
+  try {
+    const envPath = path.join(process.cwd(), '.env');
+    if (fs.existsSync(envPath)) {
+      let env = fs.readFileSync(envPath, 'utf8');
+      if (env.includes('ADMIN_PASSWORD_HASH=')) {
+        env = env.replace(/ADMIN_PASSWORD_HASH=.*/g, `ADMIN_PASSWORD_HASH=${result}`);
+      } else {
+        env += `\nADMIN_PASSWORD_HASH=${result}\n`;
+      }
+      fs.writeFileSync(envPath, env);
+    }
+  } catch (e) {
+    console.error("Could not write .env file", e);
+  }
+  
+  process.env.ADMIN_PASSWORD_HASH = result;
+  res.json({ success: true });
+});
+
 app.use(express.json());
 app.use(
   "/api/login",

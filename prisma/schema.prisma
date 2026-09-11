@@ -59,3 +59,28 @@ model Chronique {
   date        DateTime @default(now())
   excerpt     String?
 }
+model PageContent {
+  id String @id @default(cuid())
+  slug String @unique
+  title String
+  content String
+  updatedAt DateTime @updatedAt
+}
+
+model TeamMember {
+  id String @id @default(cuid())
+  name String
+  role String
+  bio String?
+  imageUrl String?
+  order Int @default(0)
+}
+
+model Partner {
+  id String @id @default(cuid())
+  name String
+  logoUrl String?
+  websiteUrl String?
+  description String?
+  order Int @default(0)
+}

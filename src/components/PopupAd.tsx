@@ -44,7 +44,7 @@ export function PopupAd() {
           </div>
           <div className="p-6">
             <h3 className="font-bold text-brand-dark mb-2 text-sm">{ad.name}</h3>
-            <p className="text-xs text-gray-500 mb-5 leading-relaxed">Découvrez cette offre proposée par un partenaire d’Einsof-media.</p>
+            <p className="text-xs text-gray-500 mb-5 leading-relaxed">Découvrez cette offre proposée par un partenaire d’Guinée+.</p>
             <a 
               href={ad.targetUrl}
               target="_blank"

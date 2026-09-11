@@ -27,13 +27,13 @@ export default function Footer() {
         {/* Brand & About */}
         <div className="lg:col-span-4 lg:pr-8 pb-10 lg:pb-0">
           <div className="flex items-center gap-3 mb-5">
-            <img src="/logo.jpg" alt="Einsof-media" className="w-11 h-11 object-contain" />
+            <img src="/icon.png" alt="Guinée+" className="w-11 h-11 object-contain" />
             <div className="ft-headline text-2xl font-semibold tracking-tight leading-none text-white">
-              Einsof-Media
+              Guinée+
             </div>
           </div>
           <p className="text-white/55 text-sm mb-6 leading-relaxed max-w-xs">
-            {config?.slogan || 'Le média guinéen qui relie l\u2019information de proximité aux grandes histoires du pays.'}
+            {config?.slogan || 'Avec Guinée+ ,vivez l\'info en temps réel et accédez à une information brute, vérifiée et sans compromis'}
           </p>
           <div className="flex gap-2">
             <a href={config?.socials?.facebook} aria-label="Facebook" className="ft-social w-9 h-9 border border-white/15 text-white/60 flex items-center justify-center hover:bg-[#1877F2] hover:border-[#1877F2] hover:text-white">
@@ -94,15 +94,14 @@ export default function Footer() {
           <ul className="space-y-4 text-sm text-white/60">
             <li className="flex items-start gap-3">
               <Phone className="w-4 h-4 text-white/30 shrink-0 mt-0.5" />
-              <span className="font-medium text-white/80">{config?.phone || '+224 625 80 87 66'}</span>
+              <span className="font-medium text-white/80">{config?.phone || '+224 625 37 54 09'}</span>
             </li>
             <li className="flex items-start gap-3">
               <Mail className="w-4 h-4 text-white/30 shrink-0 mt-0.5" />
               <div className="flex flex-col font-medium text-white/80">
                 {config?.emails ? config.emails.map((email: string, idx: number) => <span key={idx}>{email}</span>) : (
                   <>
-                    <span>contact@einsof-media.gn</span>
-                    <span>Mohamedfof66@gmail.com</span>
+                    <span>contact@mediaguineeplus.com</span>
                   </>
                 )}
               </div>
@@ -119,7 +118,7 @@ export default function Footer() {
       <div className="border-t border-dashed border-white/10">
         <div className="max-w-7xl mx-auto px-4 py-5 flex flex-col md:flex-row justify-between items-center gap-2">
           <p className="ft-mono text-[10px] text-white/35 uppercase tracking-wide">
-            © {new Date().getFullYear()} Einsof-Media — Tous droits réservés
+            © {new Date().getFullYear()} Guinée+ — Tous droits réservés
           </p>
           <p className="ft-mono text-[10px] text-white/35 uppercase tracking-wide flex items-center gap-1.5">
             <Newspaper size={11} className="text-brand-red" />

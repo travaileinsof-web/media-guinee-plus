@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 
-export default function About() {
+export default function MentionsLegales() {
   const [content, setContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/pages/about')
+    fetch('/api/pages/mentions-legales')
       .then(res => res.json())
       .then(data => {
         if (data && data.content) {
           setContent(data.content);
         } else {
-          setContent(null); // Fallback to static if empty
+          setContent(null);
         }
       })
       .catch(() => setContent(null))
@@ -28,9 +28,8 @@ export default function About() {
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           className="mb-12"
         >
-          <span className="text-brand-red font-bold tracking-wider uppercase text-sm mb-4 block">Découvrir Guinée+</span>
           <h1 className="text-4xl md:text-5xl font-serif font-black tracking-tight text-gray-900 border-l-8 border-brand-red pl-4">
-            À propos de nous
+            Mentions Légales
           </h1>
         </motion.div>
         
@@ -53,24 +52,17 @@ export default function About() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="prose prose-lg prose-red max-w-none text-gray-800"
           >
-            <p className="text-xl font-medium leading-relaxed mb-8">
-              Bienvenue sur <strong>Guinée+</strong>, le média qui met l’information guinéenne en mouvement.
-            </p>
-            <p className="mb-6">
-              Nous sommes un média d'information générale, indépendant et engagé, basé à Bonfi, Matam. Notre mission principale se résume en trois mots : <strong>Informer, Éclairer, Rassembler</strong>.
-            </p>
-            <h2 className="text-2xl font-bold mt-10 mb-4 font-serif">Notre Mission</h2>
-            <p className="mb-6">
-              Guinée+ rassemble actualité locale, décryptage et récits de terrain pour mieux comprendre la Guinée. Notre rédaction privilégie les faits vérifiés, les voix de proximité et les sujets qui ont un impact concret sur la vie quotidienne.
-            </p>
-            <div className="bg-gray-50 p-6 rounded-lg border border-gray-100 mt-8">
-              <h3 className="text-xl font-bold mb-3 font-serif">Notre Engagement</h3>
-              <ul className="list-disc pl-5 space-y-2">
-                <li>Une information vérifiée, rigoureuse et impartiale.</li>
-                <li>Une couverture approfondie de l'actualité locale, nationale et internationale.</li>
-                <li>Un espace de débat et d'analyse pour éclairer l'opinion publique.</li>
-              </ul>
-            </div>
+            <h2>Éditeur du site</h2>
+            <p>Le site <strong>médiaGuinéeplus.com</strong> est édité par la rédaction de Guinée+.</p>
+            <p>Adresse : Bonfi Niger, Matam, Conakry, Guinée.</p>
+            <p>Téléphone : +224 625 37 54 09</p>
+            <p>Email : contact@mediaguineeplus.com</p>
+            <h2>Directeur de la publication</h2>
+            <p>Mohamed Fofana</p>
+            <h2>Hébergement</h2>
+            <p>Ce site est hébergé par Vercel Inc.<br/>340 S Lemon Ave #4133<br/>Walnut, CA 91789, USA.</p>
+            <h2>Propriété intellectuelle</h2>
+            <p>L'ensemble de ce site relève de la législation guinéenne et internationale sur le droit d'auteur et la propriété intellectuelle. Tous les droits de reproduction sont réservés.</p>
           </motion.div>
         )}
       </div>

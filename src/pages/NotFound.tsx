@@ -11,7 +11,7 @@ export default function NotFound() {
       <div className="relative mx-auto w-full max-w-5xl">
         <Reveal>
           <p className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[0.3em] text-brand-yellow">
-            <span className="h-1 w-10 bg-brand-red" /> Einsof-media
+            <span className="h-1 w-10 bg-brand-red" /> Guinée+
           </p>
         </Reveal>
         <Reveal delay={0.1}>
