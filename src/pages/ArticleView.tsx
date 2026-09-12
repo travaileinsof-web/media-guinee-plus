@@ -7,7 +7,6 @@ import { Reveal } from '../components/Reveal';
 import { motion, useScroll, useTransform } from 'motion/react';
 import { Calendar, Clock, Share2, Facebook, Twitter, Linkedin, Link2, Eye } from 'lucide-react';
 import { AdSpace } from '../components/AdSpace';
-import axios from 'axios';
 
 export default function ArticleView() {
   const { id } = useParams<{ id: string }>();
@@ -29,9 +28,12 @@ export default function ArticleView() {
   };
 
   useEffect(() => {
-    axios.get(`/api/articles/${id}`, { cache: 'no-store' })
+    fetch(`/api/articles/${id}`, { cache: 'no-store' })
       .then(res => {
-        const data = res.data;
+        if (!res.ok) throw new Error('Article introuvable');
+        return res.json();
+      })
+      .then(data => {
         if (!data.error) {
           setArticle(data);
         }
@@ -87,7 +89,7 @@ export default function ArticleView() {
         <div className="flex-1 max-w-4xl">
           <Reveal delay={0.3}>
             <div className="hidden md:block mb-10">
-              <AdSpace format="horizontal" className="rounded-xl h-24" />
+              <AdSpace location="article_top" format="horizontal" className="rounded-xl h-24" />
             </div>
 
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between border-b border-gray-100 pb-8 mb-12 gap-6">
@@ -121,11 +123,7 @@ export default function ArticleView() {
               dangerouslySetInnerHTML={{ __html: article.content }}
             />
             
-            <AdSpace format="in-article" className="rounded-xl" />
-
-            <div className="mt-16 border-t border-gray-100 pt-12">
-              <AdSpace format="horizontal" className="rounded-xl" />
-            </div>
+            <AdSpace location="article_middle" format="in-article" className="rounded-xl" />
           </div>
         </Reveal>
         </div>
@@ -133,8 +131,7 @@ export default function ArticleView() {
         {/* Sidebar Ads */}
         <aside className="w-full lg:w-80 hidden lg:block flex-shrink-0 z-10">
           <div className="sticky top-24 space-y-6">
-            <AdSpace format="square" className="rounded-xl" />
-            <AdSpace format="vertical" className="rounded-xl h-[300px]" />
+            <AdSpace location="sidebar" format="vertical" className="rounded-xl h-[300px]" />
           </div>
         </aside>
       </div>

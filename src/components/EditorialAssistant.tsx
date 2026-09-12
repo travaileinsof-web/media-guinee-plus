@@ -4,6 +4,13 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
+const SUGGESTED_QUESTIONS = [
+  'Quels sont les derniers articles sur la santé ?',
+  'Quels sujets concernent Conakry ?',
+  'Quels articles parlent d’économie ?',
+  'Quelles sont les dernières chroniques ?',
+];
+
 interface Source {
   id: string;
   title: string;
@@ -84,7 +91,7 @@ export function EditorialAssistant() {
           exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 10, scale: 0.98, transition: { duration: 0.2 } }}
           transition={{ duration: 0.4, ease: EASE }}
           style={{ borderTop: '3px solid #C81D25', transformOrigin: 'bottom right' }}
-          className="fixed bottom-24 right-4 md:right-8 z-[90] w-[calc(100vw-32px)] max-w-md overflow-hidden bg-[#F7F4EE] shadow-2xl"
+          className="fixed bottom-24 right-4 md:right-8 z-90 w-[calc(100vw-32px)] max-w-md overflow-hidden bg-[#F7F4EE] shadow-2xl"
         >
           {/* En-tête façon fronton de rubrique */}
           <header className="flex items-start justify-between px-5 pt-4 pb-3 border-b border-black/10">
@@ -107,10 +114,24 @@ export function EditorialAssistant() {
 
           <div className="max-h-[55vh] overflow-y-auto px-5 py-4">
             {!answer && !error && (
-              <p className="text-sm leading-relaxed text-brand-dark/60 mb-1">
-                Posez une question sur l'actualité publiée par notre rédaction. Chaque réponse s'appuie sur des
-                articles vérifiés.
-              </p>
+              <>
+                <p className="text-sm leading-relaxed text-brand-dark/60 mb-3">
+                  Posez une question sur l'actualité publiée par notre rédaction. Chaque réponse s'appuie sur des
+                  articles vérifiés.
+                </p>
+                <div className="mb-4 flex flex-wrap gap-2" aria-label="Questions suggérées">
+                  {SUGGESTED_QUESTIONS.map(suggestedQuestion => (
+                    <button
+                      key={suggestedQuestion}
+                      type="button"
+                      onClick={() => setQuestion(suggestedQuestion)}
+                      className="border border-brand-dark/15 bg-white px-2.5 py-1.5 text-left text-[11px] font-semibold leading-tight text-brand-dark transition-colors hover:border-brand-red hover:text-brand-red"
+                    >
+                      {suggestedQuestion}
+                    </button>
+                  ))}
+                </div>
+              </>
             )}
 
             {loading && (
@@ -198,7 +219,7 @@ export function EditorialAssistant() {
         whileHover={prefersReducedMotion ? undefined : { x: -4 }}
         whileTap={prefersReducedMotion ? undefined : { scale: 0.96 }}
         transition={{ duration: 0.25, ease: EASE }}
-        className="fixed bottom-16 right-0 z-[90] flex flex-col items-center gap-2 bg-brand-dark px-2.5 py-4 text-white shadow-xl"
+        className="fixed bottom-16 right-0 z-90 flex flex-col items-center gap-2 bg-brand-dark px-2.5 py-4 text-white shadow-xl"
         style={{ borderTopLeftRadius: '10px', borderBottomLeftRadius: '10px' }}
       >
         {isOpen ? (

@@ -14,6 +14,8 @@ import Contact from './pages/Contact.tsx';
 import Podcasts from './pages/Podcasts.tsx';
 import Reportages from './pages/Reportages.tsx';
 import Rubriques from './pages/Rubriques.tsx';
+import Chroniques from './pages/Chroniques.tsx';
+import ChroniqueView from './pages/ChroniqueView.tsx';
 import NotFound from './pages/NotFound.tsx';
 
 // Admin imports
@@ -65,6 +67,8 @@ createRoot(document.getElementById('root')!).render(
           <Route path="contact" element={<Contact />} />
           <Route path="podcasts" element={<Podcasts />} />
           <Route path="reportages" element={<Reportages />} />
+          <Route path="chroniques" element={<Chroniques />} />
+          <Route path="chronique/:id" element={<ChroniqueView />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

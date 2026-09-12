@@ -5,7 +5,7 @@ import { useAds } from '../lib/hooks';
 
 export function PopupAd() {
   const [isVisible, setIsVisible] = useState(false);
-  const { ads, loading } = useAds('popup_global');
+  const { ads, loading } = useAds('popup');
 
   useEffect(() => {
     // Show after some time subtly

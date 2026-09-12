@@ -90,7 +90,7 @@ export default function Header() {
 
         {/* Ad Banner */}
         <div className="hidden lg:flex flex-1 justify-center px-4">
-          <div className="w-full max-w-[728px] h-[90px] flex items-center justify-center">
+          <div className="w-full max-w-182 h-22.5 flex items-center justify-center">
             <AdSpace location="header_top" format="horizontal" />
           </div>
         </div>
@@ -121,7 +121,7 @@ export default function Header() {
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 5 }}
-                className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 shadow-xl z-[100] max-h-[400px] overflow-y-auto"
+                className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 shadow-xl z-100 max-h-100 overflow-y-auto"
               >
                 {searchLoading ? (
                   <div className="p-4 text-sm text-gray-500 text-center">Recherche...</div>
@@ -185,6 +185,7 @@ export default function Header() {
                 {cat.name}
               </NavLink>
             ))}
+            <NavLink to="/chroniques">Chroniques</NavLink>
           </div>
 
           {/* Mobile Menu Dropdown */}
@@ -206,6 +207,9 @@ export default function Header() {
                       {cat.name}
                     </Link>
                   ))}
+                  <Link to="/chroniques" className="py-3 px-6 text-sm font-bold uppercase text-white hover:text-brand-yellow border-b border-gray-800">
+                    Chroniques
+                  </Link>
                 </div>
               </motion.div>
             )}

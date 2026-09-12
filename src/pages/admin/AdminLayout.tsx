@@ -2,7 +2,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   FileText, LayoutDashboard, Settings, Tags, LogOut, Radio, 
   Image, Users, Handshake, FileEdit, ChevronLeft, ChevronRight,
-  Bell, Search, User, AlertTriangle
+  Bell, Search, User, AlertTriangle, Menu, X
 } from 'lucide-react';
 import { useLayoutEffect, useState } from 'react';
 import { authFetch } from '../../lib/auth';
@@ -24,6 +24,7 @@ export default function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -76,10 +77,17 @@ export default function AdminLayout() {
     <div className="h-screen overflow-hidden bg-[#F8FAFC] flex font-sans text-gray-900">
       <Toaster position="top-right" richColors />
       {/* Sidebar Collapsible */}
+      {isMobileSidebarOpen && (
+        <button
+          aria-label="Fermer le menu"
+          onClick={() => setIsMobileSidebarOpen(false)}
+          className="fixed inset-0 z-30 bg-gray-950/40 backdrop-blur-sm lg:hidden"
+        />
+      )}
       <aside 
-        className={`${isCollapsed ? 'w-20' : 'w-64'} bg-white border-r border-gray-100 flex flex-col transition-all duration-300 relative z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)]`}
+        className={`${isCollapsed ? 'lg:w-20' : 'lg:w-64'} fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-gray-100 bg-white shadow-[8px_0_30px_rgba(0,0,0,0.08)] transition-transform duration-300 lg:relative lg:z-20 lg:translate-x-0 lg:shadow-[4px_0_24px_rgba(0,0,0,0.02)] ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
-        <div className="h-16 flex items-center justify-center border-b border-gray-100 px-4 relative">
+        <div className="relative flex h-18 items-center justify-center border-b border-gray-100 px-4">
           {!isCollapsed ? (
             <span className="text-xl font-serif font-black tracking-tighter">
               Guinée<span className="text-brand-red">+</span>
@@ -89,19 +97,25 @@ export default function AdminLayout() {
           )}
           <button 
             onClick={() => setIsCollapsed(!isCollapsed)}
+            aria-label={isCollapsed ? 'Développer la sidebar' : 'Réduire la sidebar'}
             className="absolute -right-3 top-5 bg-white border border-gray-200 rounded-full p-1 text-gray-400 hover:text-brand-red hover:shadow-md transition-all"
           >
             {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
           </button>
+          <button aria-label="Fermer le menu" onClick={() => setIsMobileSidebarOpen(false)} className="absolute right-4 rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-900 lg:hidden">
+            <X size={18} />
+          </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto py-6 px-3 space-y-1 hide-scrollbar">
+        <div className="px-5 pb-3 pt-6 lg:px-4"><p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Navigation</p></div>
+        <nav className="hide-scrollbar flex-1 space-y-1 overflow-y-auto px-3 pb-6">
           {NAV_ITEMS.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <Link
                 key={item.path}
                 to={item.path}
+                onClick={() => setIsMobileSidebarOpen(false)}
                 title={isCollapsed ? item.name : undefined}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${
                   isActive 
@@ -118,9 +132,10 @@ export default function AdminLayout() {
           })}
         </nav>
 
-        <div className="p-4 border-t border-gray-100 space-y-2">
+        <div className="space-y-2 border-t border-gray-100 p-4">
           <Link
             to="/admin/settings"
+            onClick={() => setIsMobileSidebarOpen(false)}
             title={isCollapsed ? "Paramètres" : undefined}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${
               location.pathname === '/admin/settings' 
@@ -145,24 +160,38 @@ export default function AdminLayout() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Minimalist Topbar */}
-        <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-8 shrink-0 relative z-10">
-          <div className="flex-1 flex items-center">
-            <div className="relative w-96 hidden md:block group">
+        <header className="relative z-10 flex h-18 shrink-0 items-center justify-between border-b border-gray-100 bg-white px-4 md:px-8">
+          <div className="flex min-w-0 flex-1 items-center gap-3 md:gap-5">
+            <button aria-label="Ouvrir le menu" onClick={() => setIsMobileSidebarOpen(true)} className="rounded-xl p-2 text-gray-500 hover:bg-red-50 hover:text-brand-red lg:hidden">
+              <Menu size={21} />
+            </button>
+            <div className="hidden min-w-0 lg:block">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-red">Espace administration</p>
+              <h2 className="mt-1 truncate font-serif text-xl font-black text-gray-900">
+                {NAV_ITEMS.find(item => item.path === location.pathname)?.name || (location.pathname === '/admin' ? 'Vue d’ensemble' : 'Paramètres')}
+              </h2>
+            </div>
+            <div className="relative hidden w-72 xl:block group">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-brand-red transition-colors" />
               <input 
                 type="text" 
-                placeholder="Recherche globale (articles, pages...)" 
-                className="w-full pl-10 pr-4 py-2 bg-gray-50 border-none rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-brand-red/20 focus:bg-white transition-all"
+                placeholder="Rechercher dans l’espace..." 
+                aria-label="Recherche globale"
+                className="w-full rounded-xl border border-gray-100 bg-gray-50 py-2.5 pl-10 pr-4 text-sm transition-all placeholder:text-gray-400 focus:border-brand-red/30 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-red/10"
               />
             </div>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3 md:gap-5">
+            <div className="hidden items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-700 sm:flex">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Système opérationnel
+            </div>
             
             {/* Notification Dropdown Container */}
             <div className="relative">
               <button 
                 onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                className="relative p-1 text-gray-400 hover:text-brand-red transition-colors"
+                aria-label="Ouvrir les notifications"
+                className="relative rounded-xl p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-brand-red"
               >
                 <Bell className="w-5 h-5" />
                 <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-brand-red rounded-full border-2 border-white"></span>
@@ -207,14 +236,14 @@ export default function AdminLayout() {
               )}
             </div>
 
-            <div className="w-px h-6 bg-gray-200"></div>
+            <div className="hidden h-7 w-px bg-gray-200 sm:block"></div>
             <div className="relative">
-              <button onClick={() => setIsProfileOpen(!isProfileOpen)} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                <div className="text-right hidden sm:block">
+              <button aria-label="Ouvrir le profil administrateur" onClick={() => setIsProfileOpen(!isProfileOpen)} className="group flex items-center gap-2.5 rounded-xl p-1.5 transition-colors hover:bg-gray-50">
+                <div className="hidden text-right sm:block">
                   <p className="text-sm font-bold text-gray-900 leading-none">Admin</p>
                   <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold mt-1">Super Utilisateur</p>
                 </div>
-                <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-red to-orange-500 flex items-center justify-center text-white shadow-sm">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-tr from-brand-red to-orange-500 text-white shadow-md shadow-brand-red/20 transition-transform group-hover:scale-105">
                   <User className="w-5 h-5" />
                 </div>
               </button>
@@ -247,7 +276,7 @@ export default function AdminLayout() {
 
       {/* Logout Premium Modal */}
       {isLogoutModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="p-6 text-center">
               <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm">
@@ -278,10 +307,10 @@ export default function AdminLayout() {
       )}
       {/* Password Premium Modal */}
       {isPasswordModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-md animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-md animate-in fade-in duration-300">
           <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300">
             <div className="p-8">
-              <div className="w-14 h-14 bg-gradient-to-tr from-brand-red to-orange-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-brand-red/30">
+              <div className="w-14 h-14 bg-linear-to-tr from-brand-red to-orange-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-brand-red/30">
                 <Settings className="w-7 h-7 text-white" />
               </div>
               <h3 className="text-2xl font-black text-gray-900 mb-2 font-serif">Sécurité</h3>

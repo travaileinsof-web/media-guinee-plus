@@ -81,7 +81,7 @@ export default function Reportages() {
       </Reveal>
 
       <div className="mb-12">
-        <AdSpace format="horizontal" className="rounded-2xl" />
+        <AdSpace location="content_top" format="horizontal" className="rounded-2xl" />
       </div>
 
       {/* Featured Video */}
@@ -160,8 +160,7 @@ export default function Reportages() {
 
         <aside className="w-full lg:w-80 hidden lg:block flex-shrink-0 z-10">
           <div className="sticky top-24 space-y-6">
-            <AdSpace format="square" className="rounded-xl" />
-            <AdSpace format="vertical" className="rounded-xl h-[300px]" />
+            <AdSpace location="sidebar" format="vertical" className="rounded-xl h-[300px]" />
           </div>
         </aside>
       </section>

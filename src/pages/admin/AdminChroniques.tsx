@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, X, Save } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Save, AlertTriangle } from 'lucide-react';
 import { authFetch } from '../../lib/auth';
 import { toast } from 'sonner';
-import type { ChangeEvent, FormEvent } from 'react';
+import type { FormEvent } from 'react';
 
 export default function AdminChroniques() {
   const [chroniques, setChroniques] = useState<any[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [currentChronique, setCurrentChronique] = useState<any>({});
+  const [chroniqueToDelete, setChroniqueToDelete] = useState<any>(null);
 
   const fetchChroniques = async () => {
     const res = await fetch('/api/chroniques', { cache: 'no-store' });
@@ -38,10 +39,17 @@ export default function AdminChroniques() {
     fetchChroniques();
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Voulez-vous vraiment supprimer cette chronique ?')) {
-      await authFetch(`/api/chroniques/${id}`, { method: 'DELETE' });
+  const handleDelete = async () => {
+    if (!chroniqueToDelete) return;
+
+    try {
+      const response = await authFetch(`/api/chroniques/${chroniqueToDelete.id}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Suppression impossible');
+      setChroniqueToDelete(null);
+      toast.success('Chronique supprimée');
       fetchChroniques();
+    } catch {
+      toast.error('Impossible de supprimer cette chronique');
     }
   };
 
@@ -144,7 +152,7 @@ export default function AdminChroniques() {
                       <button onClick={() => { setCurrentChronique(chronique); setIsEditing(true); }} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg">
                         <Edit2 size={18} />
                       </button>
-                      <button onClick={() => handleDelete(chronique.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg">
+                      <button aria-label={`Supprimer ${chronique.title}`} onClick={() => setChroniqueToDelete(chronique)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg">
                         <Trash2 size={18} />
                       </button>
                     </div>
@@ -160,6 +168,36 @@ export default function AdminChroniques() {
               )}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {chroniqueToDelete && (
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-gray-950/50 p-4 backdrop-blur-sm">
+          <div role="dialog" aria-modal="true" aria-labelledby="delete-chronique-title" className="w-full max-w-md overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl">
+            <div className="flex items-start justify-between border-b border-gray-100 p-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-brand-red">
+                  <AlertTriangle size={22} />
+                </div>
+                <div>
+                  <h2 id="delete-chronique-title" className="font-serif text-xl font-black text-gray-900">Supprimer cette chronique ?</h2>
+                  <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-gray-400">Action définitive</p>
+                </div>
+              </div>
+              <button aria-label="Fermer" onClick={() => setChroniqueToDelete(null)} className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-sm leading-relaxed text-gray-600">
+                La chronique <strong className="text-gray-900">{chroniqueToDelete.title}</strong> de {chroniqueToDelete.author} sera définitivement supprimée.
+              </p>
+            </div>
+            <div className="flex gap-3 border-t border-gray-100 bg-gray-50 p-4">
+              <button onClick={() => setChroniqueToDelete(null)} className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-2.5 font-bold text-gray-700 transition-colors hover:bg-gray-100">Annuler</button>
+              <button onClick={handleDelete} className="flex-1 rounded-xl bg-brand-red px-4 py-2.5 font-bold text-white shadow-md shadow-brand-red/20 transition-colors hover:bg-red-700">Supprimer</button>
+            </div>
+          </div>
         </div>
       )}
     </div>

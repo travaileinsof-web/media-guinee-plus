@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import { Plus, Edit2, Trash2, CheckCircle, XCircle, AlertTriangle, X } from 'lucide-react';
 import { authFetch } from '../../lib/auth';
 import { toast } from 'sonner';
-import type { ChangeEvent, FormEvent } from 'react';
+import type { FormEvent } from 'react';
 
 export default function AdminAds() {
   const [ads, setAds] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [currentAd, setCurrentAd] = useState<any>(null);
+  const [adToDelete, setAdToDelete] = useState<any>(null);
 
   const fetchAds = () => {
     fetch('/api/ads', { cache: 'no-store' })
@@ -33,10 +34,17 @@ export default function AdminAds() {
     setIsEditing(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Voulez-vous vraiment supprimer cet espace publicitaire ?')) {
-      await authFetch(`/api/ads/${id}`, { method: 'DELETE' });
+  const handleDelete = async () => {
+    if (!adToDelete) return;
+
+    try {
+      const response = await authFetch(`/api/ads/${adToDelete.id}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Suppression impossible');
+      toast.success('Espace publicitaire supprimé');
+      setAdToDelete(null);
       fetchAds();
+    } catch {
+      toast.error('Impossible de supprimer cet espace publicitaire');
     }
   };
 
@@ -92,13 +100,16 @@ export default function AdminAds() {
               <label className="text-sm font-bold text-gray-700">Emplacement</label>
               <select required value={currentAd.location || ''} onChange={e => setCurrentAd({...currentAd, location: e.target.value})} className="w-full px-4 py-2 border rounded-lg">
                 <option value="" disabled>Sélectionner un emplacement</option>
+                <option value="header_top">En-tête - Bannière</option>
                 <option value="home_top">Accueil - Haut (Bannière)</option>
                 <option value="home_middle">Accueil - Milieu (Entre sections)</option>
-                <option value="sidebar_right">Barre latérale - Droite</option>
+                <option value="category_top">Rubrique - Haut (Bannière)</option>
+                <option value="content_top">Contenus - Haut (Bannière)</option>
+                <option value="sidebar">Barre latérale - Droite</option>
                 <option value="article_top">Article - Haut</option>
                 <option value="article_middle">Article - Milieu du texte</option>
                 <option value="article_bottom">Article - Bas</option>
-                <option value="popup_global">Pop-up Global (Toutes pages)</option>
+                <option value="popup">Pop-up Global (Toutes pages)</option>
               </select>
             </div>
             <div className="space-y-2">
@@ -177,7 +188,7 @@ export default function AdminAds() {
                 <td className="px-6 py-4 text-right">
                   <div className="flex justify-end gap-2">
                     <button onClick={() => handleEdit(ad)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit2 size={18} /></button>
-                    <button onClick={() => handleDelete(ad.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={18} /></button>
+                    <button aria-label={`Supprimer ${ad.name}`} onClick={() => setAdToDelete(ad)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={18} /></button>
                   </div>
                 </td>
               </tr>
@@ -185,6 +196,36 @@ export default function AdminAds() {
           </tbody>
         </table>
       </div>
+
+      {adToDelete && (
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-gray-950/50 backdrop-blur-sm">
+          <div role="dialog" aria-modal="true" aria-labelledby="delete-ad-title" className="w-full max-w-md overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl">
+            <div className="flex items-start justify-between border-b border-gray-100 p-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-brand-red">
+                  <AlertTriangle size={22} />
+                </div>
+                <div>
+                  <h2 id="delete-ad-title" className="font-serif text-xl font-black text-gray-900">Supprimer cet espace ?</h2>
+                  <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-gray-400">Action définitive</p>
+                </div>
+              </div>
+              <button aria-label="Fermer" onClick={() => setAdToDelete(null)} className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-sm leading-relaxed text-gray-600">
+                La publicité <strong className="text-gray-900">{adToDelete.name}</strong> sera retirée de tous ses emplacements. Cette action ne peut pas être annulée.
+              </p>
+            </div>
+            <div className="flex gap-3 border-t border-gray-100 bg-gray-50 p-4">
+              <button onClick={() => setAdToDelete(null)} className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-2.5 font-bold text-gray-700 transition-colors hover:bg-gray-100">Annuler</button>
+              <button onClick={handleDelete} className="flex-1 rounded-xl bg-brand-red px-4 py-2.5 font-bold text-white shadow-md shadow-brand-red/20 transition-colors hover:bg-red-700">Supprimer</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

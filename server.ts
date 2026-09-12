@@ -192,9 +192,25 @@ app.use(express.json());
 
 // --- New API Routes for Pages, Team, Partners ---
 
+const DEFAULT_PAGES: Record<string, { title: string; content: string }> = {
+  about: {
+    title: 'À propos de nous',
+    content: '<p>Bienvenue sur <strong>Guinée+</strong>, le média qui met l’information guinéenne en mouvement.</p><p>Nous sommes un média d’information générale, indépendant et engagé, basé à Bonfi, Matam. Notre mission : informer, éclairer et rassembler.</p><h2>Notre mission</h2><p>Guinée+ rassemble actualité locale, décryptage et récits de terrain pour mieux comprendre la Guinée. Notre rédaction privilégie les faits vérifiés, les voix de proximité et les sujets qui ont un impact concret sur la vie quotidienne.</p><h2>Notre engagement</h2><ul><li>Une information vérifiée, rigoureuse et impartiale.</li><li>Une couverture de l’actualité locale, nationale et internationale.</li><li>Un espace de débat et d’analyse pour éclairer l’opinion publique.</li></ul>'
+  },
+  'mentions-legales': {
+    title: 'Mentions Légales',
+    content: '<h2>Identification du média</h2><p><strong>Guinée+</strong> est un service de presse en ligne consacré à l’information guinéenne et à l’actualité nationale, régionale et internationale.</p><p>Éditeur : [Nom de l’éditeur / Entreprise]<br>Siège social : [Adresse complète]<br>Directeur de publication : [Nom]<br>Contact : [contact@...]</p><h2>Responsabilité éditoriale</h2><p>La rédaction s’efforce de distinguer les faits, les analyses, les opinions, les chroniques et les contenus sponsorisés. Toute demande de rectification ou de droit de réponse peut être adressée à la rédaction.</p><h2>Propriété intellectuelle</h2><p>Les textes, articles, photographies, illustrations, vidéos, nom et identité visuelle de Guinée+ sont protégés. Toute reproduction doit faire l’objet d’une autorisation préalable et mentionner clairement la source.</p>'
+  },
+  confidentialite: {
+    title: 'Politique de Confidentialité',
+    content: '<h2>Responsable du traitement</h2><p><strong>Guinée+</strong> traite les données nécessaires au fonctionnement du site et à la réponse aux demandes des utilisateurs.</p><p>Contact : [contact@...]<br>Adresse : [Adresse complète]</p><h2>Données collectées et finalités</h2><p>Selon votre utilisation du site, nous pouvons traiter vos coordonnées, le contenu de vos messages, des données techniques de navigation et des informations d’audience. Ces données servent à répondre à vos demandes, sécuriser le site et améliorer nos services.</p><h2>Vos droits</h2><p>Vous pouvez demander l’accès, la rectification ou la suppression de vos données en contactant la rédaction. Les cookies essentiels sont nécessaires au fonctionnement du site ; les préférences analytiques peuvent être gérées depuis votre navigateur.</p>'
+  }
+};
+
 app.get("/api/pages/:slug", async (req, res) => {
   const page = await prisma.pageContent.findUnique({ where: { slug: req.params.slug } });
-  res.json(page || { slug: req.params.slug, title: '', content: '' });
+  const defaults = DEFAULT_PAGES[req.params.slug];
+  res.json(page?.content ? page : { slug: req.params.slug, ...(defaults || { title: '', content: '' }) });
 });
 
 app.put("/api/pages/:slug", authenticateToken, async (req, res) => {
@@ -518,6 +534,18 @@ app.get("/api/chroniques", async (req, res) => {
     orderBy: { date: "desc" },
   });
   res.json(chroniques);
+});
+
+app.get("/api/chroniques/:id", async (req, res) => {
+  const chronique = await prisma.chronique.findUnique({
+    where: { id: req.params.id },
+  });
+
+  if (!chronique) {
+    return res.status(404).json({ error: "Chronique introuvable" });
+  }
+
+  res.json(chronique);
 });
 
 app.post("/api/chroniques", authenticateToken, async (req, res) => {

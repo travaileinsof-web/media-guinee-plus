@@ -59,6 +59,7 @@ model AdSpace {
   isActive  Boolean @default(true)
   imageUrl  String?
   targetUrl String?
+  createdAt DateTime @default(now())
 }
 
 model Chronique {

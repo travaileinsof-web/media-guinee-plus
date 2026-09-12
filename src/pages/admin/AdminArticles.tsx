@@ -10,6 +10,9 @@ import type { ChangeEvent, FormEvent } from 'react';
 export default function AdminArticles() {
   const [articles, setArticles] = useState<any[]>([]);
   const { categories } = useCategories();
+  const availableCategories = categories.filter(category =>
+    category.isActive || category.id === currentArticle.categoryId
+  );
   
   const [isEditing, setIsEditing] = useState(false);
   const [currentArticle, setCurrentArticle] = useState<any>({});
@@ -104,7 +107,7 @@ export default function AdminArticles() {
                   title: '',
                   excerpt: '',
                   content: '',
-                  categoryId: categories[0]?.id || '',
+                  categoryId: categories.find(category => category.isActive)?.id || '',
                   author: 'Rédaction',
                   readTime: '3 min',
                   isFeatured: false
@@ -139,7 +142,7 @@ export default function AdminArticles() {
                 <label className="text-sm font-bold text-gray-700">Catégorie</label>
                 <select value={currentArticle.categoryId || ''} onChange={e => setCurrentArticle({...currentArticle, categoryId: e.target.value})} className="w-full px-4 py-2 border rounded-lg" required>
                   <option value="">Sélectionner une catégorie</option>
-                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  {availableCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
               <div className="space-y-2">

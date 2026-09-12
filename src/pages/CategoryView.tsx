@@ -26,7 +26,7 @@ export default function CategoryView() {
       </Reveal>
 
       <div className="mb-12">
-        <AdSpace format="horizontal" className="rounded-xl" />
+        <AdSpace location="category_top" format="horizontal" className="rounded-xl" />
       </div>
 
       {articles.length === 0 ? (
@@ -49,8 +49,7 @@ export default function CategoryView() {
           
           <aside className="w-full lg:w-80 hidden lg:block flex-shrink-0">
             <div className="sticky top-32 space-y-6">
-              <AdSpace format="square" className="rounded-xl" />
-              <AdSpace format="vertical" className="rounded-xl h-[300px]" />
+              <AdSpace location="sidebar" format="vertical" className="rounded-xl h-[300px]" />
             </div>
           </aside>
         </div>

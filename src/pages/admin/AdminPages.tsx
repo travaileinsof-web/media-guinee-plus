@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Save, FileText } from 'lucide-react';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
+import { authFetch } from '../../lib/auth';
 
 const AVAILABLE_PAGES = [
   { slug: 'about', label: 'À propos' },
@@ -32,12 +33,10 @@ export default function AdminPages() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const token = localStorage.getItem('adminToken');
-      await fetch(`/api/pages/${currentSlug}`, {
+      await authFetch(`/api/pages/${currentSlug}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ title, content })
       });
@@ -102,7 +101,7 @@ export default function AdminPages() {
           </div>
           <div>
             <label className="block text-sm font-bold text-gray-700 uppercase tracking-wide mb-2">Contenu (Texte riche)</label>
-            <div className="h-[500px] pb-12">
+            <div className="h-125 pb-12">
               <ReactQuill
                 theme="snow"
                 value={content}

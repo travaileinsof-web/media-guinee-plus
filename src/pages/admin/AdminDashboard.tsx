@@ -1,74 +1,32 @@
 import { useState, useEffect } from 'react';
-import { FileText, Tags, Image as ImageIcon, Eye, TrendingUp, Clock, Plus, Handshake, Users, FileEdit } from 'lucide-react';
+import { FileText, Tags, Image as ImageIcon, Eye, TrendingUp, Clock, Plus, Handshake, Users, FileEdit, ArrowUpRight, Activity, PenLine } from 'lucide-react';
 import { authFetch } from '../../lib/auth';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import { AdminDashboardSkeleton } from '../../components/AdminSkeleton';
 import { 
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
   BarChart, Bar
 } from 'recharts';
 
-const viewsData = [
-  { name: 'Lun', vues: 4000 },
-  { name: 'Mar', vues: 3000 },
-  { name: 'Mer', vues: 2000 },
-  { name: 'Jeu', vues: 2780 },
-  { name: 'Ven', vues: 1890 },
-  { name: 'Sam', vues: 2390 },
-  { name: 'Dim', vues: 3490 },
-];
-
-const categoryData = [
-  { name: 'Politique', articles: 120 },
-  { name: 'Sport', articles: 85 },
-  { name: 'Culture', articles: 45 },
-  { name: 'Économie', articles: 65 },
-];
-
 export default function AdminDashboard() {
-  const [stats, setStats] = useState({ articles: 0, categories: 0, ads: 0, views: 0, recentActivities: [] as any[] });
+  const [stats, setStats] = useState({ articles: 0, categories: 0, ads: 0, views: 0, viewsData: [] as any[], categoryData: [] as any[], recentActivities: [] as any[] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      authFetch('/api/articles').then(r => r.json()),
-      authFetch('/api/categories').then(r => r.json()),
-      authFetch('/api/ads').then(r => r.json())
-    ]).then(([articles, categories, ads]) => {
-      const articlesList = Array.isArray(articles) ? articles : [];
-      const sortedArticles = [...articlesList].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      const recentArticles = sortedArticles.slice(0, 3).map(a => ({
-        text: `Article : ${a.title.slice(0, 40)}${a.title.length > 40 ? '...' : ''}`,
-        time: `il y a ${formatDistanceToNow(new Date(a.date), { locale: fr })}`,
-        timestamp: new Date(a.date).getTime(),
-        type: 'article'
-      }));
-      
-      const adsList = Array.isArray(ads) ? ads : [];
-      // On extrait le timestamp de l'ID de la pub (ex: ad_1714389020000)
-      const sortedAds = [...adsList].map((a: any) => {
-        const tsMatch = a.id.match(/\d+/);
-        const timestamp = tsMatch ? parseInt(tsMatch[0], 10) : Date.now() - 86400000;
-        return { ...a, timestamp };
-      }).sort((a, b) => b.timestamp - a.timestamp);
-
-      const recentAds = sortedAds.slice(0, 2).map((a: any) => ({
-        text: `Pub active : ${a.name}`,
-        time: `il y a ${formatDistanceToNow(new Date(a.timestamp), { locale: fr })}`,
-        timestamp: a.timestamp,
-        type: 'ad'
-      }));
-
-      const recent = [...recentArticles, ...recentAds].sort((a, b) => b.timestamp - a.timestamp).slice(0, 5);
-
+    authFetch('/api/admin/stats').then(r => {
+      if (!r.ok) throw new Error('Impossible de charger les statistiques');
+      return r.json();
+    }).then(data => {
       setStats({
-        articles: articlesList.length,
-        categories: Array.isArray(categories) ? categories.length : 0,
-        ads: Array.isArray(ads) ? ads.length : 0,
-        views: articlesList.reduce((acc: any, curr: any) => acc + (curr.views || 0), 0),
-        recentActivities: recent.length > 0 ? recent : [{ text: 'Aucune activité récente', time: '-', type: 'none' }]
+        articles: data.articles || 0,
+        categories: data.categories || 0,
+        ads: data.ads || 0,
+        views: data.views || 0,
+        viewsData: Array.isArray(data.viewsData) ? data.viewsData : [],
+        categoryData: Array.isArray(data.categoryData) ? data.categoryData : [],
+        recentActivities: Array.isArray(data.recentActivities) ? data.recentActivities : [{ text: 'Aucune activité récente', time: '-', type: 'none' }]
       });
       setLoading(false);
     }).catch(console.error);
@@ -82,11 +40,12 @@ export default function AdminDashboard() {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-serif font-black text-gray-900">Vue d'ensemble</h1>
-          <p className="text-gray-500 text-sm mt-1">Gérez l'activité de Guinée+ en temps réel.</p>
+          <div className="mb-3 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.24em] text-brand-red"><Activity size={14} /> Centre de pilotage</div>
+          <h1 className="text-3xl font-serif font-black tracking-tight text-gray-900 md:text-4xl">Vue d'ensemble</h1>
+          <p className="mt-2 text-sm text-gray-500">La rédaction de Guinée+ en un coup d’œil.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Link to="/admin/articles" className="bg-brand-red text-white px-4 py-2 rounded-lg font-bold text-sm shadow-sm shadow-brand-red/20 hover:bg-red-700 hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2">
+          <Link to="/admin/articles" className="flex items-center gap-2 rounded-xl bg-brand-red px-4 py-3 text-sm font-bold text-white shadow-lg shadow-brand-red/20 transition-all hover:-translate-y-0.5 hover:bg-red-700">
             <Plus size={16} /> Nouvel article
           </Link>
         </div>
@@ -95,23 +54,22 @@ export default function AdminDashboard() {
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Articles Publiés', value: stats.articles, icon: <FileText size={24} className="text-blue-500" />, trend: '+12%', color: 'bg-blue-50' },
-          { label: 'Catégories', value: stats.categories, icon: <Tags size={24} className="text-amber-500" />, trend: '+2', color: 'bg-amber-50' },
-          { label: 'Espaces Pub.', value: stats.ads, icon: <ImageIcon size={24} className="text-emerald-500" />, trend: 'Actifs', color: 'bg-emerald-50' },
-          { label: 'Vues Totales', value: stats.views.toLocaleString(), icon: <Eye size={24} className="text-brand-red" />, trend: '+24%', color: 'bg-red-50' },
+          { label: 'Articles publiés', value: stats.articles, icon: <FileText size={21} />, trend: 'Éditorial', color: 'bg-blue-50 text-blue-600' },
+          { label: 'Rubriques actives', value: stats.categories, icon: <Tags size={21} />, trend: 'Organisation', color: 'bg-amber-50 text-amber-600' },
+          { label: 'Espaces publicitaires', value: stats.ads, icon: <ImageIcon size={21} />, trend: 'Monétisation', color: 'bg-emerald-50 text-emerald-600' },
+          { label: 'Vues cumulées', value: stats.views.toLocaleString(), icon: <Eye size={21} />, trend: 'Audience', color: 'bg-red-50 text-brand-red' },
         ].map((kpi, i) => (
-          <div key={i} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden group">
-            <div className="flex justify-between items-start mb-4">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${kpi.color}`}>
+          <div key={i} className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl">
+            <div className="mb-6 flex items-start justify-between">
+              <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${kpi.color}`}>
                 {kpi.icon}
               </div>
-              <span className="flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">
-                <TrendingUp size={12} /> {kpi.trend}
-              </span>
+              <ArrowUpRight size={17} className="text-gray-300 transition-colors group-hover:text-brand-red" />
             </div>
             <div>
-              <h3 className="text-3xl font-black text-gray-900 tracking-tight">{kpi.value}</h3>
-              <p className="text-sm font-medium text-gray-500 mt-1">{kpi.label}</p>
+              <h3 className="text-3xl font-black tracking-tight text-gray-900">{kpi.value}</h3>
+              <p className="mt-1 text-sm font-medium text-gray-500">{kpi.label}</p>
+              <p className="mt-4 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">{kpi.trend}</p>
             </div>
             <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-gray-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none scale-0 group-hover:scale-100 duration-500"></div>
           </div>
@@ -121,20 +79,21 @@ export default function AdminDashboard() {
       {/* Charts section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Chart */}
-        <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="font-bold text-gray-900">Audience (7 derniers jours)</h3>
+          <div className="lg:col-span-2 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm md:p-7">
+          <div className="mb-6 flex items-start justify-between">
+            <div><p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-red">Performance</p><h3 className="mt-1 font-serif text-2xl font-black text-gray-900">Audience récente</h3></div>
+            <span className="rounded-full bg-gray-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-400">7 jours</span>
           </div>
-          <div className="h-[300px] w-full">
+          <div className="h-75 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={viewsData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={stats.viewsData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorVues" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#E30613" stopOpacity={0.3}/>
                     <stop offset="95%" stopColor="#E30613" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#9CA3AF', fontSize: 12}} dy={10} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#9CA3AF', fontSize: 11}} dy={10} />
                 <YAxis axisLine={false} tickLine={false} tick={{fill: '#9CA3AF', fontSize: 12}} />
                 <Tooltip 
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}
@@ -147,20 +106,19 @@ export default function AdminDashboard() {
         </div>
 
         {/* Secondary Chart */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-          <div className="mb-6">
-            <h3 className="font-bold text-gray-900">Répartition par catégorie</h3>
+          <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm md:p-7">
+          <div className="mb-6"><p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-blue">Éditorial</p><h3 className="mt-1 font-serif text-2xl font-black text-gray-900">Vues par rubrique</h3>
           </div>
-          <div className="h-[300px] w-full">
+          <div className="h-75 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={categoryData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+              <BarChart data={stats.categoryData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#9CA3AF', fontSize: 12}} dy={10} />
                 <YAxis axisLine={false} tickLine={false} tick={{fill: '#9CA3AF', fontSize: 12}} />
                 <Tooltip 
                   cursor={{fill: '#F3F4F6'}}
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}
                 />
-                <Bar dataKey="articles" fill="#0A369D" radius={[4, 4, 0, 0]} barSize={32} />
+                <Bar dataKey="articles" fill="#0A369D" radius={[6, 6, 0, 0]} barSize={28} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -169,16 +127,16 @@ export default function AdminDashboard() {
 
       {/* Bottom Grid: Recent Activity & Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h3 className="font-bold text-gray-900 mb-6">Activités récentes</h3>
-          <div className="space-y-6">
+        <div className="lg:col-span-2 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm md:p-7">
+          <div className="mb-6 flex items-center justify-between"><div><p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-red">Fil du jour</p><h3 className="mt-1 font-serif text-2xl font-black text-gray-900">Activités récentes</h3></div><Clock size={18} className="text-gray-300" /></div>
+          <div className="space-y-1">
             {stats.recentActivities.map((act, i) => (
-              <div key={i} className="flex gap-4">
-                <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100">
-                  <Clock size={16} className="text-gray-400" />
+              <div key={i} className="flex gap-4 rounded-xl px-2 py-4 transition-colors hover:bg-gray-50">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-red/5 text-brand-red">
+                  {act.type === 'article' ? <FileText size={16} /> : <PenLine size={16} />}
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{act.text}</p>
+                  <p className="text-sm font-bold text-gray-900">{act.text}</p>
                   <p className="text-xs text-gray-500 mt-0.5">{act.time}</p>
                 </div>
               </div>
@@ -186,20 +144,17 @@ export default function AdminDashboard() {
           </div>
         </div>
         
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h3 className="font-bold text-gray-900 mb-6">Actions rapides</h3>
+        <div className="rounded-2xl border border-gray-100 bg-brand-dark p-6 text-white shadow-sm md:p-7">
+          <div className="mb-6"><p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-yellow">Raccourcis</p><h3 className="mt-1 font-serif text-2xl font-black">Actions rapides</h3></div>
           <div className="space-y-3">
-            <Link to="/admin/partenaires" className="w-full flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-brand-red hover:bg-red-50 transition-colors group">
-              <span className="text-sm font-bold text-gray-700 group-hover:text-brand-red">Gérer les partenaires</span>
-              <Handshake size={18} className="text-gray-400 group-hover:text-brand-red" />
+            <Link to="/admin/partenaires" className="group flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/5 p-4 transition-colors hover:bg-white/10">
+              <span className="text-sm font-bold text-white">Gérer les partenaires</span><Handshake size={18} className="text-gray-400 transition-colors group-hover:text-brand-yellow" />
             </Link>
-            <Link to="/admin/equipe" className="w-full flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-brand-red hover:bg-red-50 transition-colors group">
-              <span className="text-sm font-bold text-gray-700 group-hover:text-brand-red">Modifier l'équipe</span>
-              <Users size={18} className="text-gray-400 group-hover:text-brand-red" />
+            <Link to="/admin/equipe" className="group flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/5 p-4 transition-colors hover:bg-white/10">
+              <span className="text-sm font-bold text-white">Modifier l'équipe</span><Users size={18} className="text-gray-400 transition-colors group-hover:text-brand-yellow" />
             </Link>
-            <Link to="/admin/pages" className="w-full flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-brand-red hover:bg-red-50 transition-colors group">
-              <span className="text-sm font-bold text-gray-700 group-hover:text-brand-red">Éditer "À propos"</span>
-              <FileEdit size={18} className="text-gray-400 group-hover:text-brand-red" />
+            <Link to="/admin/pages" className="group flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/5 p-4 transition-colors hover:bg-white/10">
+              <span className="text-sm font-bold text-white">Éditer "À propos"</span><FileEdit size={18} className="text-gray-400 transition-colors group-hover:text-brand-yellow" />
             </Link>
           </div>
         </div>
